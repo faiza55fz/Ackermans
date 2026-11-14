@@ -42,8 +42,8 @@ config.yaml      all runtime configuration
 2. **Clean.** Standardize columns, timestamps, and geometries for both sensors. Drop or flag invalid rows explicitly.
 3. **Grid.** Map cleaned points onto the common grid defined in `config.yaml`.
 4. **Model.** Fit cross-sensor relationships with statsmodels or scikit-learn. Estimates stay distinguishable from observations.
-5. **Validate.** Confirm grid assignment, required columns, and that mixed outputs carry `is_estimated`.
-6. **Export.** Write results under `data/processed`.
+5. **Validate.** Confirm grid assignment and required columns, evaluate spatial and temporal holdouts with MAE, RMSE, bias, and R², attach bootstrap prediction intervals to estimated counts and FRP, and ensure mixed outputs carry `is_estimated`.
+6. **Export.** Write observed and estimated results under `data/processed` in `harmonized_hotspots.parquet`, distinguish them with a `source` column, and write run metadata and aggregated metrics to `summary.json`.
 
 ## Code rules
 
