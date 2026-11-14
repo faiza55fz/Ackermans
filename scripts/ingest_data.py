@@ -1,198 +1,513 @@
 """
-FireTrace Pilot Pipeline - Data Ingestion Skeleton
-Prepares ingestion for raw NASA FIRMS CSV granules into validated processed records and quarantine logs.
-Preserves 100% of raw NASA columns, preserves confidence_raw, and separates derived metadata.
+FireTrace Pilot Pipeline - Data Ingestion Tool
+Performs record-level sensor identification with robust multi-attribute conflict detection,
+preserves all original NASA columns unmodified, preserves confidence_raw without rounding,
+isolates derived fields in the derived_* namespace, routes fatal defects to quarantine,
+reconciles record counts, and prevents output artifact naming collisions.
 """
 
 import argparse
 import csv
+import hashlib
 import json
+import math
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-from validate_data import (
-    compute_dataset_spatial_bounds,
-    validate_coordinates,
-    validate_raw_record,
-    validate_timestamp,
-)
+try:
+    from validate_data import (
+        compute_dataset_spatial_bounds,
+        validate_raw_record,
+    )
+except ImportError:
+    from scripts.validate_data import (
+        compute_dataset_spatial_bounds,
+        validate_raw_record,
+    )
 
 
-def detect_sensor_family(header_keys: List[str], sample_record: Dict[str, Any]) -> str:
+# Recognized NASA satellite platform codes
+MODIS_SATELLITES = {"TERRA", "T", "AQUA", "A"}
+VIIRS_SATELLITES = {
+    "N", "NPP", "SUOMI-NPP", "SNPP",
+    "1", "20", "NOAA-20", "NOAA 20", "JPSS-1",
+    "2", "21", "NOAA-21", "NOAA 21", "JPSS-2",
+}
+
+
+def identify_record_sensor(row: Dict[str, Any]) -> Tuple[str, str, List[str]]:
     """
-    Detects whether the file represents MODIS or VIIRS based on header columns or values.
-    Does not hardcode specific sensor versions.
+    Identifies the sensor family (MODIS, VIIRS, AMBIGUOUS, or UNKNOWN) at the INDIVIDUAL RECORD level.
+    Evaluates instrument, satellite platform, and populated spectral channels together.
+    Detects contradictory evidence rather than allowing one field to override another.
+    Never guesses when evidence is missing or conflicting.
+    Returns: (sensor_family, canonical_sensor_name, identification_notes)
     """
-    keys_lower = [k.lower() for k in header_keys]
+    notes: List[str] = []
+    keys_lower = {k.lower(): k for k in row.keys()}
 
-    # VIIRS-specific raw spectral band columns
-    if any(k in keys_lower for k in ("bright_ti4", "bright_ti5")):
-        return "VIIRS"
+    # 1. Instrument attribute evidence
+    inst_key = keys_lower.get("instrument")
+    raw_instrument = str(row.get(inst_key, "")).strip().upper() if inst_key else ""
+    inst_is_modis = "MODIS" in raw_instrument
+    inst_is_viirs = "VIIRS" in raw_instrument
 
-    # MODIS-specific raw spectral band columns
-    if any(k in keys_lower for k in ("brightness", "bright_t31")):
-        return "MODIS"
+    # 2. Satellite platform attribute evidence
+    sat_key = keys_lower.get("satellite")
+    raw_satellite = str(row.get(sat_key, "")).strip() if sat_key else ""
+    sat_upper = raw_satellite.upper()
+    sat_is_modis = sat_upper in MODIS_SATELLITES
+    sat_is_viirs = sat_upper in VIIRS_SATELLITES
 
-    # Fallback to instrument / satellite column inspection
-    instrument_val = str(sample_record.get("instrument", "")).upper()
-    if "VIIRS" in instrument_val:
-        return "VIIRS"
-    if "MODIS" in instrument_val:
-        return "MODIS"
+       # 3. Spectral channel evidence
+    def has_populated_value(channel: str) -> bool:
+        key = keys_lower.get(channel)
+        if not key:
+            return False
 
-    return "UNKNOWN"
+        value = str(row.get(key, "")).strip().lower()
+
+        return value not in {
+            "", "none", "null", "nan",
+            "+nan", "-nan", "na",
+            "n/a", "inf", "+inf", "-inf",
+            "infinity",
+        }
+
+    has_viirs_channels = any(
+        has_populated_value(ch)
+        for ch in ("bright_ti4", "bright_ti5")
+    )
+
+    has_modis_channels = any(
+        has_populated_value(ch)
+        for ch in ("brightness", "bright_t31")
+    )
+    # Accumulate evidence indicators
+    modis_evidence = []
+    viirs_evidence = []
+
+    if inst_is_modis:
+        modis_evidence.append("instrument=MODIS")
+    if sat_is_modis:
+        modis_evidence.append(f"satellite={raw_satellite}")
+    if has_modis_channels:
+        modis_evidence.append("spectral_channels=MODIS(brightness/bright_t31)")
+
+    if inst_is_viirs:
+        viirs_evidence.append("instrument=VIIRS")
+    if sat_is_viirs:
+        viirs_evidence.append(f"satellite={raw_satellite}")
+    if has_viirs_channels:
+        viirs_evidence.append("spectral_channels=VIIRS(bright_ti4/bright_ti5)")
+
+    # Conflict detection: Both families show positive evidence
+    if modis_evidence and viirs_evidence:
+        family = "AMBIGUOUS"
+        canonical_name = f"Ambiguous Sensor ({raw_satellite or raw_instrument or 'Conflict'})"
+        notes.append(
+            f"CONFLICT: Contradictory sensor evidence on record. "
+            f"MODIS indicators: [{', '.join(modis_evidence)}]; "
+            f"VIIRS indicators: [{', '.join(viirs_evidence)}]"
+        )
+        return family, canonical_name, notes
+
+    # Unambiguous MODIS identification
+    if modis_evidence and not viirs_evidence:
+        family = "MODIS"
+        if sat_upper in ("TERRA", "T"):
+            canonical_name = "MODIS Terra"
+        elif sat_upper in ("AQUA", "A"):
+            canonical_name = "MODIS Aqua"
+        elif raw_satellite:
+            canonical_name = f"MODIS ({raw_satellite})"
+        else:
+            canonical_name = "MODIS (Unspecified Satellite)"
+        notes.append(f"Identified as MODIS via [{', '.join(modis_evidence)}]")
+        return family, canonical_name, notes
+
+    # Unambiguous VIIRS identification
+    if viirs_evidence and not modis_evidence:
+        family = "VIIRS"
+        if sat_upper in ("N", "NPP", "SUOMI-NPP", "SNPP"):
+            canonical_name = "VIIRS S-NPP"
+        elif sat_upper in ("1", "20", "NOAA-20", "NOAA 20", "JPSS-1"):
+            canonical_name = "VIIRS NOAA-20"
+        elif sat_upper in ("2", "21", "NOAA-21", "NOAA 21", "JPSS-2"):
+            canonical_name = "VIIRS NOAA-21"
+        elif raw_satellite:
+            canonical_name = f"VIIRS ({raw_satellite})"
+        else:
+            canonical_name = "VIIRS (Unspecified Satellite)"
+        notes.append(f"Identified as VIIRS via [{', '.join(viirs_evidence)}]")
+        return family, canonical_name, notes
+
+    # Neither sensor family could be identified from available evidence
+    family = "UNKNOWN"
+    canonical_name = f"Unknown ({raw_satellite})" if raw_satellite else "Unknown Satellite"
+    notes.append("No unambiguous sensor instrument, platform, or spectral channel evidence found")
+    return family, canonical_name, notes
 
 
-def map_canonical_satellite_name(satellite_raw: Any, family: str) -> str:
-    """Maps raw satellite code to display string without mutating raw satellite value."""
-    sat_clean = str(satellite_raw).strip()
-    if family == "MODIS":
-        if sat_clean in ("Terra", "T"):
-            return "MODIS Terra"
-        if sat_clean in ("Aqua", "A"):
-            return "MODIS Aqua"
-        return f"MODIS {sat_clean}"
-    if family == "VIIRS":
-        if sat_clean in ("N", "NPP", "Suomi-NPP"):
-            return "VIIRS S-NPP"
-        if sat_clean in ("1", "20", "NOAA-20", "JPSS-1"):
-            return "VIIRS NOAA-20"
-        if sat_clean in ("2", "21", "NOAA-21", "JPSS-2"):
-            return "VIIRS NOAA-21"
-        return f"VIIRS {sat_clean}"
-    return sat_clean
+
+def parse_confidence_fields(
+    raw_confidence: Any, sensor_family: str
+) -> Tuple[Optional[str], Optional[int], Optional[str], List[str]]:
+    """
+    Preserve the original confidence field exactly as received.
+
+    MODIS: integer percentage 0-100 only.
+    VIIRS: categorical l/n/h only.
+    No rounding, truncation, or cross-sensor conversion.
+    """
+    issues: List[str] = []
+
+    if raw_confidence is None:
+        return None, None, None, issues
+
+    # Preserve the original CSV field, including whitespace.
+    confidence_raw = str(raw_confidence)
+
+    # Use a separate normalized value only for validation.
+    raw_str = confidence_raw.strip()
+
+    modis_confidence: Optional[int] = None
+    viirs_confidence: Optional[str] = None
+
+    if raw_str == "":
+        return confidence_raw, None, None, issues
+
+    if raw_str.lower() in (
+        "none", "null", "nan", "+nan", "-nan",
+        "inf", "+inf", "-inf", "infinity", "na"
+    ):
+        issues.append(
+            f"Unexpected non-missing confidence literal: '{raw_str}'"
+        )
+        return confidence_raw, None, None, issues
+
+    if sensor_family == "MODIS":
+        try:
+            value = float(raw_str)
+
+            if not math.isfinite(value):
+                issues.append(f"MODIS confidence is not finite: '{raw_str}'")
+            elif not value.is_integer():
+                issues.append(
+                    f"Fractional MODIS confidence rejected: '{raw_str}'. "
+                    "Rounding and truncation are not permitted."
+                )
+            elif not 0 <= value <= 100:
+                issues.append(
+                    f"MODIS confidence outside valid range [0, 100]: '{raw_str}'"
+                )
+            else:
+                modis_confidence = int(value)
+
+        except (ValueError, TypeError):
+            issues.append(f"Non-numeric MODIS confidence: '{raw_str}'")
+
+    elif sensor_family == "VIIRS":
+        category = raw_str.lower()
+
+        if category in ("l", "n", "h"):
+            viirs_confidence = category
+        elif category in ("low", "nominal", "high"):
+            viirs_confidence = category[0]
+            issues.append(
+                f"VIIRS category '{raw_str}' normalized to "
+                f"'{category[0]}'"
+            )
+        else:
+            issues.append(
+                f"Unexpected VIIRS confidence category: '{raw_str}'"
+            )
+
+    else:
+        issues.append(
+            f"Sensor family '{sensor_family}' is not classified. "
+            "Confidence retained only as confidence_raw."
+        )
+
+    return (
+        confidence_raw,
+        modis_confidence,
+        viirs_confidence,
+        issues,
+    )
 
 
-def process_raw_firms_file(
+def map_derived_period(daynight_raw: Any) -> Optional[str]:
+    """
+    Maps daynight to 'Day' or 'Night'.
+    If missing, unpopulated, or unexpected, returns None (DO NOT assume Night).
+    """
+    if daynight_raw is None:
+        return None
+    val = str(daynight_raw).strip().upper()
+    if val in ("D", "DAY"):
+        return "Day"
+    if val in ("N", "NIGHT"):
+        return "Night"
+    return None
+
+
+
+def ingest_firms_csv(
     input_file: Path,
     processed_dir: Path,
     quarantine_dir: Path,
 ) -> Dict[str, Any]:
     """
-    Ingests a raw NASA FIRMS CSV file:
-    1. Preserves all original NASA columns as delivered.
-    2. Stores raw confidence as 'confidence_raw'.
-    3. Populates sensor-specific confidence without conflation.
-    4. Quarantines fatal defects into quarantine_dir with diagnostic error messages.
-    5. Stages valid records in processed_dir.
+    Ingest a NASA FIRMS CSV while preserving original source fields.
+
+    - Identifies sensor family independently for every record.
+    - Keeps MODIS and VIIRS confidence separate.
+    - Quarantines fatal validation failures.
+    - Preserves non-fatal warnings.
+    - Does not infer zero coverage or confirmed cross-satellite overlaps.
     """
+
     if not input_file.exists():
         raise FileNotFoundError(f"Input file not found: {input_file}")
 
     processed_dir.mkdir(parents=True, exist_ok=True)
     quarantine_dir.mkdir(parents=True, exist_ok=True)
 
-    with input_file.open("r", encoding="utf-8-sig", errors="replace") as f:
-        reader = csv.DictReader(f)
+    out_valid_file = (
+        processed_dir / f"{input_file.stem}_processed.json"
+    )
+    out_quarantine_file = (
+        quarantine_dir / f"{input_file.stem}_quarantined.json"
+    )
+
+    # Never silently overwrite an earlier ingestion result.
+    if out_valid_file.exists() or out_quarantine_file.exists():
+        raise FileExistsError(
+            "Output already exists. Move or rename the previous output "
+            "files before running this input again."
+        )
+
+    records_processed = 0
+    valid_records: List[Dict[str, Any]] = []
+    quarantined_records: List[Dict[str, Any]] = []
+    family_counts: Dict[str, int] = {}
+
+    with input_file.open(
+        "r", encoding="utf-8-sig", newline=""
+    ) as csv_file:
+
+        reader = csv.DictReader(csv_file)
         header = reader.fieldnames or []
 
-        records_processed = 0
-        valid_records: List[Dict[str, Any]] = []
-        quarantined_records: List[Dict[str, Any]] = []
+        if not header:
+            raise ValueError("CSV file has no header row.")
 
-        family_detected = "UNKNOWN"
+        if len(header) != len(set(header)):
+            raise ValueError(
+                "CSV contains duplicate column names. "
+                "Resolve duplicate headers before ingestion."
+            )
 
         for row in reader:
             records_processed += 1
-            if records_processed == 1:
-                family_detected = detect_sensor_family(header, row)
 
+            # 1. Identify the sensor for THIS record.
+            sensor_family, canonical_name, sensor_notes = (
+                identify_record_sensor(row)
+            )
+
+            family_counts[sensor_family] = (
+                family_counts.get(sensor_family, 0) + 1
+            )
+
+            # 2. Validate the original record.
             validation = validate_raw_record(row)
 
+            # 3. Parse confidence without changing the source field.
+            raw_confidence = row.get("confidence")
+
+            (
+                confidence_raw,
+                modis_confidence,
+                viirs_confidence,
+                confidence_issues,
+            ) = parse_confidence_fields(
+                raw_confidence,
+                sensor_family,
+            )
+
+            # Start with every original source column unchanged.
+            output_record: Dict[str, Any] = dict(row)
+
+            # 4. Keep raw and sensor-specific confidence separate.
+            output_record["confidence_raw"] = confidence_raw
+            output_record["modis_confidence"] = modis_confidence
+            output_record["viirs_confidence"] = viirs_confidence
+
+            # 5. Add derived metadata.
+            output_record["derived_family"] = sensor_family
+            output_record["derived_sensor_canonical"] = canonical_name
+            output_record["derived_timestamp_utc"] = (
+                validation.parsed_iso_timestamp
+            )
+            output_record["derived_period"] = map_derived_period(
+                row.get("daynight")
+            )
+
+            output_record["derived_latitude"] = validation.parsed_lat
+            output_record["derived_longitude"] = validation.parsed_lng
+
+            output_record["derived_scan"] = validation.parsed_scan
+            output_record["derived_track"] = validation.parsed_track
+            output_record["derived_frp"] = validation.parsed_frp
+
+            # No unsupported scientific conclusions.
+            output_record["derived_cross_sat_overlap"] = None
+            output_record["derived_coverage_status"] = "coverage_unknown"
+
+            # 6. Preserve diagnostic information.
+            validation_warnings = [
+                {
+                    "field": issue.field,
+                    "message": issue.message,
+                    "raw_value": issue.raw_value,
+                }
+                for issue in validation.issues
+                if issue.issue_type == "WARNING"
+            ]
+
+            ingestion_warnings = (
+                [{"message": note} for note in sensor_notes]
+                + [{"message": issue} for issue in confidence_issues]
+            )
+
+            output_record["_validation_warnings"] = validation_warnings
+            output_record["_ingestion_warnings"] = ingestion_warnings
+
+            # 7. Fatal defects go to quarantine.
             if validation.is_fatal:
-                quarantine_row = dict(row)
-                quarantine_row["_quarantine_issues"] = [
-                    {"field": i.field, "message": i.message, "raw_value": str(i.raw_value)}
-                    for i in validation.issues if i.issue_type == "FATAL"
+                output_record["_quarantine_issues"] = [
+                    {
+                        "field": issue.field,
+                        "message": issue.message,
+                        "raw_value": issue.raw_value,
+                    }
+                    for issue in validation.issues
+                    if issue.issue_type == "FATAL"
                 ]
-                quarantined_records.append(quarantine_row)
+
+                quarantined_records.append(output_record)
+
             else:
-                # Build unified record while explicitly preserving all raw columns
-                cleaned_record: Dict[str, Any] = {}
+                valid_records.append(output_record)
 
-                # 1. Preserve 100% of raw NASA columns as delivered
-                for k, v in row.items():
-                    cleaned_record[k] = v
-
-                # 2. Explicitly preserve raw confidence string
-                raw_conf = row.get("confidence", "")
-                cleaned_record["confidence_raw"] = str(raw_conf)
-
-                # 3. Handle sensor-specific confidence separately (no arbitrary conversion)
-                if family_detected == "MODIS":
-                    try:
-                        cleaned_record["modis_confidence"] = int(float(raw_conf))
-                    except (ValueError, TypeError):
-                        cleaned_record["modis_confidence"] = None
-                    cleaned_record["viirs_confidence"] = None
-                elif family_detected == "VIIRS":
-                    cleaned_record["viirs_confidence"] = str(raw_conf).lower().strip()
-                    cleaned_record["modis_confidence"] = None
-                else:
-                    cleaned_record["modis_confidence"] = None
-                    cleaned_record["viirs_confidence"] = None
-
-                # 4. Populate derived metadata in separated namespace
-                lat_k = next((k for k in row if k.lower() in ("latitude", "lat")), "latitude")
-                lng_k = next((k for k in row if k.lower() in ("longitude", "lng", "lon")), "longitude")
-                date_k = next((k for k in row if k.lower() in ("acq_date", "date")), "acq_date")
-                time_k = next((k for k in row if k.lower() in ("acq_time", "time")), "acq_time")
-
-                _, lat_f, lng_f, _ = validate_coordinates(row.get(lat_k), row.get(lng_k))
-                _, iso_ts, _ = validate_timestamp(row.get(date_k), row.get(time_k))
-
-                sat_val = row.get("satellite", "")
-                cleaned_record["derived_timestamp_utc"] = iso_ts
-                cleaned_record["derived_family"] = family_detected
-                cleaned_record["derived_sensor_canonical"] = map_canonical_satellite_name(sat_val, family_detected)
-                cleaned_record["derived_period"] = "Day" if str(row.get("daynight", "")).upper() == "D" else "Night"
-
-                valid_records.append(cleaned_record)
-
-    # Compute observed spatial extent from valid records
+    # 8. Compute spatial bounds using original coordinate columns.
     spatial_bounds = compute_dataset_spatial_bounds(valid_records)
 
-    # Save output artifacts
-    out_valid_file = processed_dir / f"{input_file.stem}_processed.json"
-    out_quarantine_file = quarantine_dir / f"{input_file.stem}_quarantined.json"
+    # 9. Determine the overall dataset family from all records.
+    known_families = {
+        family
+        for family in family_counts
+        if family in ("MODIS", "VIIRS")
+    }
 
-    with out_valid_file.open("w", encoding="utf-8") as f:
-        json.dump(valid_records, f, indent=2)
+    if known_families == {"MODIS", "VIIRS"}:
+        dataset_family = "MIXED"
+    elif len(known_families) == 1:
+        dataset_family = next(iter(known_families))
+    elif family_counts.get("AMBIGUOUS", 0) > 0:
+        dataset_family = "AMBIGUOUS"
+    else:
+        dataset_family = "UNKNOWN"
 
-    with out_quarantine_file.open("w", encoding="utf-8") as f:
-        json.dump(quarantined_records, f, indent=2)
+    # 10. Independently reconcile the record counts.
+    if records_processed != (
+        len(valid_records) + len(quarantined_records)
+    ):
+        raise RuntimeError(
+            "Record reconciliation failed: "
+            f"read={records_processed}, "
+            f"accepted={len(valid_records)}, "
+            f"quarantined={len(quarantined_records)}"
+        )
+
+    # 11. Write the output artifacts.
+    with out_valid_file.open("w", encoding="utf-8") as output_file:
+        json.dump(valid_records, output_file, indent=2, allow_nan=False)
+
+    with out_quarantine_file.open(
+        "w", encoding="utf-8"
+    ) as output_file:
+        json.dump(
+            quarantined_records,
+            output_file,
+            indent=2,
+            allow_nan=False,
+        )
 
     return {
         "file_name": input_file.name,
-        "family": family_detected,
+        "family": dataset_family,
+        "family_counts": family_counts,
         "total_read": records_processed,
         "valid_count": len(valid_records),
         "quarantined_count": len(quarantined_records),
+        "reconciliation_passed": True,
         "processed_output": str(out_valid_file),
         "quarantine_output": str(out_quarantine_file),
         "spatial_bounds": spatial_bounds,
     }
 
 
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Ingest and validate raw NASA FIRMS active fire granules")
-    parser.add_argument("input_file", help="Path to raw NASA FIRMS CSV file")
-    parser.add_argument("--processed_dir", default="data/processed", help="Directory for valid processed records")
-    parser.add_argument("--quarantine_dir", default="data/quarantine", help="Directory for quarantined records")
+    parser = argparse.ArgumentParser(
+        description="Ingest and validate raw NASA FIRMS active fire CSV data"
+    )
+
+    parser.add_argument(
+        "input_file",
+        help="Path to raw NASA FIRMS CSV file",
+    )
+    parser.add_argument(
+        "--processed_dir",
+        default="data/processed",
+        help="Directory for accepted processed records",
+    )
+    parser.add_argument(
+        "--quarantine_dir",
+        default="data/quarantine",
+        help="Directory for quarantined records",
+    )
+
     args = parser.parse_args()
 
-    input_p = Path(args.input_file)
-    processed_p = Path(args.processed_dir)
-    quarantine_p = Path(args.quarantine_dir)
+    input_path = Path(args.input_file)
+    processed_path = Path(args.processed_dir)
+    quarantine_path = Path(args.quarantine_dir)
 
-    print(f"Ingesting: {input_p} ...")
-    results = process_raw_firms_file(input_p, processed_p, quarantine_p)
-    print("Ingestion Complete:")
-    print(f"  Detected Family:    {results['family']}")
-    print(f"  Records Processed:  {results['total_read']:,}")
-    print(f"  Valid Accepted:     {results['valid_count']:,}")
-    print(f"  Quarantined:        {results['quarantined_count']:,}")
-    print(f"  Spatial Bounds:     {results['spatial_bounds']}")
+    print(f"Ingesting: {input_path}")
+
+    results = ingest_firms_csv(
+        input_path,
+        processed_path,
+        quarantine_path,
+    )
+
+    print("\nIngestion complete.")
+    print(f"  Dataset family:       {results['family']}")
+    print(f"  Family counts:        {results['family_counts']}")
+    print(f"  Records processed:    {results['total_read']:,}")
+    print(f"  Valid accepted:       {results['valid_count']:,}")
+    print(f"  Quarantined:          {results['quarantined_count']:,}")
+    print(f"  Reconciliation:       {results['reconciliation_passed']}")
+    print(f"  Spatial bounds:       {results['spatial_bounds']}")
+    print(f"  Processed output:     {results['processed_output']}")
+    print(f"  Quarantine output:    {results['quarantine_output']}")
+
+
+
 
 
 if __name__ == "__main__":
