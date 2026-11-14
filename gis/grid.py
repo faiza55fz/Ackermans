@@ -36,7 +36,7 @@ def assign_grid(df: pd.DataFrame, cell_size: float = 0.01) -> pd.DataFrame:
 def cell_to_polygon(cell_x: int, cell_y: int, cell_size: float = 0.01) -> Polygon:
     """
     Construct a square bounding box Polygon for a given grid cell index.
-    Coordinates are rounded to 6 decimal places to prevent floating point drift.
+    Coordinates are rounded to 5 decimal places (~1m precision) to keep GeoJSON compact.
 
     Parameters:
     -----------
@@ -52,8 +52,8 @@ def cell_to_polygon(cell_x: int, cell_y: int, cell_size: float = 0.01) -> Polygo
     shapely.geometry.Polygon:
         Square polygon representing the grid cell boundary.
     """
-    min_lon = round(cell_x * cell_size, 6)
-    min_lat = round(cell_y * cell_size, 6)
-    max_lon = round(min_lon + cell_size, 6)
-    max_lat = round(min_lat + cell_size, 6)
+    min_lon = round(cell_x * cell_size, 5)
+    min_lat = round(cell_y * cell_size, 5)
+    max_lon = round(min_lon + cell_size, 5)
+    max_lat = round(min_lat + cell_size, 5)
     return box(min_lon, min_lat, max_lon, max_lat)

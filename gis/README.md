@@ -6,23 +6,27 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
 
 ## Architectural & Numerical Decisions
 
-1. **Multi-Region & Dynamic AOI:**
-   - The pipeline accepts a `--region` parameter (e.g. `--region palisades` or `--region western_ghats_karnataka`).
-   - For curated regions like **Palisades**, the vetted study area bounding box (`lat: [34.0, 34.2]°N`, `lon: [-118.75, -118.42]°W`) is applied automatically.
-   - For any other region, the default AOI is dynamically computed from the data's bounding box and rounded outward to the grid cell size (`floor(min / cell_size)` and `ceil(max / cell_size)`), ensuring zero valid land observations are clipped.
+1. **Lightweight Web Map Export Modes:**
+   - **`--mode monthly` (default):** Spatiotemporal aggregation per month and sensor.
+   - **`--mode totals`:** Aggregates observations across all time into **one feature per unique spatial cell** (`{region}_cells_totals.geojson`), recording overall and sensor-specific detection metrics (`count`, `days`, `frp_sum`, `modis_count`, `viirs_count`, etc.). Drastically reduces payload for regional overviews.
+   - **`--mode yearly`:** Generates individual files per year (`{region}_cells_{year}.geojson` inside `gis/output/{region}_yearly/`), enabling fast on-demand temporal loading ($\le 2.9$ MB per year).
+   - **`--cell-size 0.05`:** Coarser spatial resolution (~5.5 km) reducing regional feature count by $> 90\%$ for fast client-side rendering.
 
-2. **Robust Grid Indexing (Float Precision Fix):**
-   - Coordinates divided by float cell sizes (e.g. `coord / 0.01`) avoid binary float drift via `np.floor(np.round(coord / cell_size, 6)).astype(int)`.
-   - Polygon coordinates in `cell_to_polygon` and GeoJSON exports are rounded to 6 decimal places.
+2. **Compact Coordinates & Standard NaN Serialization:**
+   - Polygon coordinates are rounded to 5 decimal places (~1m precision), reducing JSON text size without loss of cartographic accuracy.
+   - Missing or non-numeric FRP values remain `NaN` internally and serialize cleanly as standard JSON `null`.
+
+3. **Multi-Region & Dynamic AOI:**
+   - Accepts `--region <name>` (e.g. `palisades` or `western_ghats_karnataka`).
+   - For **Palisades**, the vetted study area bounding box (`lat: [34.0, 34.2]°N`, `lon: [-118.75, -118.42]°W`) is applied automatically.
+   - For other regions, the AOI bounding box is dynamically computed from coordinates rounded outward to the cell size.
+
+4. **Robust Grid Indexing (Float Precision Bug Fix):**
+   - Coordinates use `np.floor(np.round(coord / cell_size, 6)).astype(int)` to prevent IEEE 754 float drift on cell boundaries.
    - Validated by unit tests in `gis/test_grid.py`.
 
-3. **Preserving Missing FRP (NaN):**
-   - Missing or non-numeric FRP values remain `NaN` rather than being imputed to `0.0`.
-   - `frp_sum` skips NaNs and evaluates to `NaN` only if all observations in a group are missing.
-   - Each record tracks `frp_missing_count`. In GeoJSON exports, `NaN` is serialized as valid standard JSON `null`.
-
-4. **Performance on Large Datasets:**
-   - All spatial, temporal, and agreement operations use fully vectorized NumPy, Pandas, and GeoPandas routines (cached unique-cell geometries, fast bounding box masking), processing 130,000+ records in seconds without row loops.
+5. **Repository Size Management:**
+   - Files exceeding 20 MB (e.g. uncompressed 0.01° full-history monthly exports like `western_ghats_karnataka_cells.geojson` at 26.5 MB) are excluded via `.gitignore` to keep repository clones fast and prevent GitHub upload bottlenecks.
 
 ---
 
@@ -32,7 +36,7 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
 * **`assign_grid(df, cell_size=0.01)`**:
   Calculates integer grid cell indices `cell_x = floor(round(lon / cell_size, 6))` and `cell_y = floor(round(lat / cell_size, 6))`, and assigns `cell_id` (`"{cell_x}_{cell_y}"`).
 * **`cell_to_polygon(cell_x, cell_y, cell_size=0.01)`**:
-  Constructs a square Shapely `Polygon` representing the bounding box of a grid cell with 6-decimal precision.
+  Constructs a square Shapely `Polygon` for a grid cell with 5-decimal precision.
 
 ---
 
@@ -48,16 +52,19 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
 
 ### 3. `gis/aggregate.py`
 * **`aggregate_by_cell(df, period="M")`**:
-  Aggregates observations per grid cell, time period (default monthly `"M"`), and sensor (`MODIS` or `VIIRS`). Computes `count`, `days` (unique detection-days), `frp_sum`, and `frp_missing_count`.
+  Aggregates observations per grid cell, time period (e.g. `"M"`, `"Y"`), and sensor (`MODIS` or `VIIRS`). Computes `count`, `days` (unique detection-days), `frp_sum`, and `frp_missing_count`.
 
 ---
 
 ### 4. `gis/export_geojson.py`
-* **`export_cells_to_geojson(agg_df, output_path, cell_size=0.01)`**:
-  Converts aggregated tabular records into square polygons (EPSG:4326) and saves them as GeoJSON with properties:
-  `cell_id`, `period`, `sensor`, `count`, `days`, `frp_sum`, and `frp_missing_count`.
-* **`run_pipeline(region, csv_path=None, output_path=None, cell_size=0.01, period='M')`**:
-  Full automated workflow executable via CLI.
+* **`export_cells_to_geojson(agg_df, output_path, cell_size=0.01, coord_precision=5)`**:
+  Converts aggregated records to GeoJSON square polygons with 5-decimal precision and `null` for missing values.
+* **`export_totals(gridded_df, output_path, cell_size=0.01)`**:
+  Exports one feature per cell across all time with per-sensor metrics.
+* **`export_yearly(gridded_df, output_dir, region, cell_size=0.01)`**:
+  Exports separate GeoJSON files partitioned by calendar year.
+* **`run_pipeline(...)`**:
+  Full automated workflow executable via CLI with `--region`, `--mode`, `--cell-size`, and `--period`.
 
 ---
 
@@ -87,24 +94,24 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
 python gis/test_grid.py
 ```
 
-### 2. Run for Pacific Palisades (LA)
+### 2. Export Modes (Western Ghats Example)
+* **All-Time Totals (One Feature per Cell — 9.5 MB):**
+  ```powershell
+  python gis/export_geojson.py --region western_ghats_karnataka --mode totals
+  ```
+* **Yearly Slices ($\le 2.9$ MB per file):**
+  ```powershell
+  python gis/export_geojson.py --region western_ghats_karnataka --mode yearly
+  ```
+* **Coarser 0.05° Grid (Web-optimized — 702 KB totals / 13.5 MB monthly):**
+  ```powershell
+  python gis/export_geojson.py --region western_ghats_karnataka --mode totals --cell-size 0.05
+  python gis/export_geojson.py --region western_ghats_karnataka --mode monthly --cell-size 0.05
+  ```
+
+### 3. Run for Pacific Palisades (LA)
 ```powershell
 python gis/export_geojson.py --region palisades
 python gis/compare.py --region palisades
 python gis/preview.py --region palisades
 ```
-Outputs:
-- `gis/output/palisades_cells.geojson`
-- `gis/output/sensor_agreement.csv`
-- `gis/output/preview.png`
-
-### 3. Run for Western Ghats (Karnataka)
-```powershell
-python gis/export_geojson.py --region western_ghats_karnataka
-python gis/compare.py --region western_ghats_karnataka
-python gis/preview.py --region western_ghats_karnataka
-```
-Outputs:
-- `gis/output/western_ghats_karnataka_cells.geojson`
-- `gis/output/western_ghats_karnataka_sensor_agreement.csv`
-- `gis/output/western_ghats_karnataka_preview.png`

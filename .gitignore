@@ -23,3 +23,6 @@ logs/
 data/
 venv/
 
+# Large generated spatial outputs (>20 MB)
+gis/output/western_ghats_karnataka_cells.geojson
+

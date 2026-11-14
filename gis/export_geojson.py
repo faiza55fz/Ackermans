@@ -2,7 +2,8 @@ import os
 import sys
 import argparse
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, List, Dict, Any
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
@@ -19,36 +20,14 @@ except ImportError:
 
 def export_cells_to_geojson(
     agg_df: pd.DataFrame,
-    output_path: Union[str, Path] = "gis/output/palisades_cells.geojson",
-    cell_size: float = 0.01
+    output_path: Union[str, Path],
+    cell_size: float = 0.01,
+    coord_precision: int = 5
 ) -> gpd.GeoDataFrame:
     """
     Save aggregated cells as GeoJSON squares with specified properties.
+    Coordinates are rounded to coord_precision (default 5 decimals).
     NaN values are automatically serialized as JSON 'null'.
-
-    Properties:
-    -----------
-    - cell_id
-    - period
-    - sensor
-    - count
-    - days
-    - frp_sum
-    - frp_missing_count (if present)
-
-    Parameters:
-    -----------
-    agg_df : pd.DataFrame
-        Aggregated dataframe containing cell information.
-    output_path : str or Path
-        Destination GeoJSON file path.
-    cell_size : float, optional (default=0.01)
-        Cell size in degrees.
-
-    Returns:
-    --------
-    gpd.GeoDataFrame:
-        The exported GeoDataFrame.
     """
     out_file = Path(output_path)
     out_file.parent.mkdir(parents=True, exist_ok=True)
@@ -63,27 +42,149 @@ def export_cells_to_geojson(
     unique_cells = df[["cell_x", "cell_y"]].drop_duplicates()
     geom_map = {
         (int(cx), int(cy)): box(
-            round(cx * cell_size, 6),
-            round(cy * cell_size, 6),
-            round((cx + 1) * cell_size, 6),
-            round((cy + 1) * cell_size, 6),
+            round(cx * cell_size, coord_precision),
+            round(cy * cell_size, coord_precision),
+            round((cx + 1) * cell_size, coord_precision),
+            round((cy + 1) * cell_size, coord_precision),
         )
         for cx, cy in zip(unique_cells["cell_x"], unique_cells["cell_y"])
     }
     geometries = [geom_map[(int(cx), int(cy))] for cx, cy in zip(df["cell_x"], df["cell_y"])]
 
-    # Select required properties
-    required_props = ["cell_id", "period", "sensor", "count", "days", "frp_sum"]
-    if "frp_missing_count" in df.columns:
-        required_props.append("frp_missing_count")
+    # Exclude helper coordinate columns from properties if desired
+    exclude_cols = {"cell_x", "cell_y", "geometry"}
+    prop_cols = [c for c in df.columns if c not in exclude_cols]
 
-    export_df = df[required_props].copy()
-
-    gdf = gpd.GeoDataFrame(export_df, geometry=geometries, crs="EPSG:4326")
+    gdf = gpd.GeoDataFrame(df[prop_cols], geometry=geometries, crs="EPSG:4326")
     gdf.to_file(out_file, driver="GeoJSON")
-    file_size_mb = out_file.stat().st_size / (1024 * 1024)
-    print(f"Exported {len(gdf):,} grid cell features to {out_file.resolve()} ({file_size_mb:.2f} MB)")
+
+    file_size_bytes = out_file.stat().st_size
+    size_str = f"{file_size_bytes / (1024 * 1024):.2f} MB" if file_size_bytes >= 1024 * 1024 else f"{file_size_bytes / 1024:.1f} KB"
+    print(f"Exported {len(gdf):,} features to {out_file.resolve()} ({size_str})")
     return gdf
+
+
+def export_totals(
+    gridded_df: pd.DataFrame,
+    output_path: Union[str, Path],
+    cell_size: float = 0.01,
+    coord_precision: int = 5
+) -> gpd.GeoDataFrame:
+    """
+    Export one feature per cell with total count, days, and FRP metrics per sensor over all time.
+    """
+    work = gridded_df.copy()
+    work["date_str"] = pd.to_datetime(work["date"]).dt.strftime("%Y-%m-%d")
+    work["frp_numeric"] = pd.to_numeric(work["frp"], errors="coerce")
+    work["frp_missing"] = work["frp_numeric"].isna().astype(int)
+
+    # 1. Overall cell aggregates
+    overall = work.groupby(["cell_id", "cell_x", "cell_y"], as_index=False).agg(
+        count=("date_str", "count"),
+        days=("date_str", "nunique"),
+        frp_sum=("frp_numeric", "sum"),
+        frp_missing_count=("frp_missing", "sum")
+    )
+    all_missing = overall["frp_missing_count"] == overall["count"]
+    overall.loc[all_missing, "frp_sum"] = np.nan
+    overall["frp_sum"] = overall["frp_sum"].round(2)
+
+    # 2. MODIS breakdown
+    modis_df = work[work["sensor"].str.upper() == "MODIS"]
+    if not modis_df.empty:
+        modis_agg = modis_df.groupby("cell_id", as_index=False).agg(
+            modis_count=("date_str", "count"),
+            modis_days=("date_str", "nunique"),
+            modis_frp_sum=("frp_numeric", "sum"),
+            modis_frp_missing=("frp_missing", "sum")
+        )
+        m_all_missing = modis_agg["modis_frp_missing"] == modis_agg["modis_count"]
+        modis_agg.loc[m_all_missing, "modis_frp_sum"] = np.nan
+        modis_agg["modis_frp_sum"] = modis_agg["modis_frp_sum"].round(2)
+        modis_agg = modis_agg.drop(columns=["modis_frp_missing"])
+    else:
+        modis_agg = pd.DataFrame(columns=["cell_id", "modis_count", "modis_days", "modis_frp_sum"])
+
+    # 3. VIIRS breakdown
+    viirs_df = work[work["sensor"].str.upper() == "VIIRS"]
+    if not viirs_df.empty:
+        viirs_agg = viirs_df.groupby("cell_id", as_index=False).agg(
+            viirs_count=("date_str", "count"),
+            viirs_days=("date_str", "nunique"),
+            viirs_frp_sum=("frp_numeric", "sum"),
+            viirs_frp_missing=("frp_missing", "sum")
+        )
+        v_all_missing = viirs_agg["viirs_frp_missing"] == viirs_agg["viirs_count"]
+        viirs_agg.loc[v_all_missing, "viirs_frp_sum"] = np.nan
+        viirs_agg["viirs_frp_sum"] = viirs_agg["viirs_frp_sum"].round(2)
+        viirs_agg = viirs_agg.drop(columns=["viirs_frp_missing"])
+    else:
+        viirs_agg = pd.DataFrame(columns=["cell_id", "viirs_count", "viirs_days", "viirs_frp_sum"])
+
+    # Merge overall with per-sensor metrics
+    merged = overall.merge(modis_agg, on="cell_id", how="left").merge(viirs_agg, on="cell_id", how="left")
+    merged["modis_count"] = merged["modis_count"].fillna(0).astype(int)
+    merged["modis_days"] = merged["modis_days"].fillna(0).astype(int)
+    merged["viirs_count"] = merged["viirs_count"].fillna(0).astype(int)
+    merged["viirs_days"] = merged["viirs_days"].fillna(0).astype(int)
+
+    # Determine sensors label
+    has_m = merged["modis_count"] > 0
+    has_v = merged["viirs_count"] > 0
+    merged["sensor"] = np.where(has_m & has_v, "BOTH", np.where(has_m, "MODIS", "VIIRS"))
+
+    ordered_cols = [
+        "cell_id", "cell_x", "cell_y", "sensor", "count", "days", "frp_sum", "frp_missing_count",
+        "modis_count", "modis_days", "modis_frp_sum",
+        "viirs_count", "viirs_days", "viirs_frp_sum"
+    ]
+    return export_cells_to_geojson(
+        merged[ordered_cols],
+        output_path=output_path,
+        cell_size=cell_size,
+        coord_precision=coord_precision
+    )
+
+
+def export_yearly(
+    gridded_df: pd.DataFrame,
+    output_dir: Union[str, Path],
+    region: str,
+    cell_size: float = 0.01,
+    coord_precision: int = 5
+) -> List[Dict[str, Any]]:
+    """
+    Export one GeoJSON file per year into output_dir.
+    """
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    # Perform yearly aggregation
+    yearly_agg = aggregate_by_cell(gridded_df, period="Y")
+    years = sorted(yearly_agg["period"].unique())
+
+    yearly_stats = []
+    print(f"Exporting {len(years)} yearly GeoJSON files to {out_dir.resolve()}...")
+
+    for yr in years:
+        yr_df = yearly_agg[yearly_agg["period"] == yr].copy()
+        yr_file = out_dir / f"{region}_cells_{yr}.geojson"
+        gdf = export_cells_to_geojson(
+            yr_df,
+            output_path=yr_file,
+            cell_size=cell_size,
+            coord_precision=coord_precision
+        )
+        size_bytes = yr_file.stat().st_size
+        size_str = f"{size_bytes / (1024 * 1024):.2f} MB" if size_bytes >= 1024 * 1024 else f"{size_bytes / 1024:.1f} KB"
+        yearly_stats.append({
+            "year": yr,
+            "features": len(gdf),
+            "size_str": size_str,
+            "path": str(yr_file)
+        })
+
+    return yearly_stats
 
 
 def resolve_input_csv(region: str, input_path: Optional[str] = None) -> Path:
@@ -94,7 +195,6 @@ def resolve_input_csv(region: str, input_path: Optional[str] = None) -> Path:
             return p
         raise FileNotFoundError(f"Specified input CSV not found: {input_path}")
 
-    # Region search order
     reg_clean = region.lower().strip()
     candidates = [
         Path(f"gis/data/{reg_clean}_combined.csv"),
@@ -114,16 +214,15 @@ def run_pipeline(
     csv_path: Optional[str] = None,
     output_path: Optional[str] = None,
     cell_size: float = 0.01,
-    period: str = "M"
+    period: str = "M",
+    mode: str = "monthly",
+    coord_precision: int = 5
 ):
-    """Run full GIS processing and analysis pipeline for any region."""
+    """Run full GIS processing and analysis pipeline for any region and export mode."""
     p_csv = resolve_input_csv(region, csv_path)
 
-    if not output_path:
-        output_path = f"gis/output/{region}_cells.geojson"
-
     print("=" * 65)
-    print(f"GIS PROCESSING PIPELINE — REGION: {region.upper()}")
+    print(f"GIS PROCESSING PIPELINE — REGION: {region.upper()} | MODE: {mode.upper()} | CELL SIZE: {cell_size}°")
     print("=" * 65)
     print(f"1. Loading dataset: {p_csv}")
     df = pd.read_csv(p_csv, low_memory=False)
@@ -145,30 +244,49 @@ def run_pipeline(
     print(f"3. Assigning spatial grid (cell_size={cell_size} deg)...")
     gridded_df = assign_grid(clipped_gdf, cell_size=cell_size)
 
-    # 4. Spatiotemporal Aggregation
-    print(f"4. Aggregating by cell, period='{period}', and sensor...")
-    agg_df = aggregate_by_cell(gridded_df, period=period)
-    print(f"   Generated {len(agg_df):,} aggregated cell-period-sensor records.")
+    # 4. Mode-based Export
+    mode_clean = mode.lower().strip()
+    if mode_clean == "totals":
+        if not output_path:
+            output_path = f"gis/output/{region}_cells_totals.geojson"
+            if cell_size != 0.01:
+                output_path = f"gis/output/{region}_cells_totals_{cell_size}.geojson"
+        print(f"4. Generating TOTALS export (one feature per cell): {output_path}...")
+        export_totals(gridded_df, output_path=output_path, cell_size=cell_size, coord_precision=coord_precision)
 
-    # 5. Export GeoJSON
-    print(f"5. Exporting to GeoJSON: {output_path}...")
-    export_cells_to_geojson(agg_df, output_path=output_path, cell_size=cell_size)
+    elif mode_clean == "yearly":
+        output_dir = output_path if output_path else f"gis/output/{region}_yearly"
+        print(f"4. Generating YEARLY exports in directory: {output_dir}...")
+        export_yearly(gridded_df, output_dir=output_dir, region=region, cell_size=cell_size, coord_precision=coord_precision)
 
-    # 6. Analysis Reporting
+    else:
+        # Default monthly export
+        if not output_path:
+            output_path = f"gis/output/{region}_cells.geojson"
+            if region in ["palisades", "palisades_la"] and cell_size == 0.01:
+                output_path = "gis/output/palisades_cells.geojson"
+            elif cell_size != 0.01:
+                output_path = f"gis/output/{region}_cells_{cell_size}.geojson"
+
+        print(f"4. Aggregating by cell, period='{period}', and sensor...")
+        agg_df = aggregate_by_cell(gridded_df, period=period)
+        print(f"   Generated {len(agg_df):,} aggregated cell-period-sensor records.")
+        print(f"5. Exporting to GeoJSON: {output_path}...")
+        export_cells_to_geojson(agg_df, output_path=output_path, cell_size=cell_size, coord_precision=coord_precision)
+
+    # 5. Sensor Overlap Analysis Reporting
     print("\n" + "=" * 65)
-    print(f"ANALYSIS RESULTS: {region.upper()}")
+    print(f"ANALYSIS RESULTS: {region.upper()} (cell_size={cell_size}°)")
     print("=" * 65)
 
-    # Unique cells with hotspots per sensor (across all data)
+    year_col = "year"
+    if year_col not in gridded_df.columns:
+        gridded_df["year"] = pd.to_datetime(gridded_df["date"], errors="coerce").dt.year
+
     cells_per_sensor = gridded_df.groupby("sensor")["cell_id"].nunique()
     print("Unique cells with hotspots per sensor (entire dataset):")
     for sensor, count in cells_per_sensor.items():
         print(f"  - {sensor}: {count:,} cells")
-
-    # Filter to operational overlap period 2012-2026
-    year_col = "year"
-    if year_col not in gridded_df.columns:
-        gridded_df["year"] = pd.to_datetime(gridded_df["date"], errors="coerce").dt.year
 
     df_2012_2026 = gridded_df[(gridded_df["year"] >= 2012) & (gridded_df["year"] <= 2026)]
     cells_2012_2026_per_sensor = df_2012_2026.groupby("sensor")["cell_id"].nunique()
@@ -177,7 +295,6 @@ def run_pipeline(
     for sensor, count in cells_2012_2026_per_sensor.items():
         print(f"  - {sensor}: {count:,} cells")
 
-    # Overlap
     modis_cells_2012 = set(df_2012_2026[df_2012_2026["sensor"].str.upper() == "MODIS"]["cell_id"].unique())
     viirs_cells_2012 = set(df_2012_2026[df_2012_2026["sensor"].str.upper() == "VIIRS"]["cell_id"].unique())
     both_sensors_cells = modis_cells_2012.intersection(viirs_cells_2012)
@@ -193,16 +310,17 @@ def run_pipeline(
     if modis_cnt > 0:
         print(f"  - MODIS spatial recovery by VIIRS  : {both_cnt / modis_cnt * 100:.2f}%")
 
-    return agg_df
-
 
 def main():
     parser = argparse.ArgumentParser(description="Region-aware GIS hotspot aggregation and GeoJSON export.")
     parser.add_argument("--region", type=str, default="palisades", help="Region name (e.g. 'palisades', 'western_ghats_karnataka')")
     parser.add_argument("--input", type=str, default=None, help="Path to input CSV dataset")
-    parser.add_argument("--output", type=str, default=None, help="Path to output GeoJSON file")
+    parser.add_argument("--output", type=str, default=None, help="Path to output GeoJSON file or directory")
     parser.add_argument("--cell-size", type=float, default=0.01, help="Spatial grid cell size in degrees (default: 0.01)")
     parser.add_argument("--period", type=str, default="M", help="Temporal aggregation period (default: 'M')")
+    parser.add_argument("--mode", type=str, default="monthly", choices=["monthly", "totals", "yearly"],
+                        help="Export mode: 'monthly' (default), 'totals' (all-time per cell), or 'yearly' (one file per year)")
+    parser.add_argument("--coord-precision", type=int, default=5, help="Number of decimal places for coordinates (default: 5)")
 
     args = parser.parse_args()
     run_pipeline(
@@ -210,7 +328,9 @@ def main():
         csv_path=args.input,
         output_path=args.output,
         cell_size=args.cell_size,
-        period=args.period
+        period=args.period,
+        mode=args.mode,
+        coord_precision=args.coord_precision
     )
 
 
