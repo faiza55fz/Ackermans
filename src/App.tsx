@@ -69,6 +69,23 @@ const chartColors = {
 
 type GlobalFilters = { region: string; range: string };
 
+function isHotspotInRegion(hotspot: Hotspot, region: string): boolean {
+  if (!region || region === "Global" || region === "Western United States") return true;
+  if (region === "California") {
+    return (
+      hotspot.place.includes("California") ||
+      hotspot.place === "Sierra Nevada" ||
+      hotspot.place === "Klamath"
+    );
+  }
+  if (region === "Pacific Northwest") {
+    return (
+      hotspot.place === "Oregon" || hotspot.place === "Washington" || hotspot.place === "Idaho"
+    );
+  }
+  return true;
+}
+
 function PageIntro({
   kicker,
   title,
@@ -100,9 +117,11 @@ function PageIntro({
 function TrendChart({
   type = "overview",
   height = 260,
+  range = "Jan 2000 — Aug 2024",
 }: {
   type?: "overview" | "harmonized";
   height?: number;
+  range?: string;
 }) {
   const [visible, setVisible] = useState({
     modis: true,
@@ -112,6 +131,16 @@ function TrendChart({
   });
   const items =
     type === "overview" ? ["modis", "viirs"] : ["modis", "viirs", "harmonized", "uncertainty"];
+
+  const chartData = useMemo(() => {
+    if (range === "2024 only") {
+      return trendData.filter((d) => Number(d.year) >= 2023);
+    }
+    if (range === "Last 12 months") {
+      return trendData.filter((d) => Number(d.year) >= 2021);
+    }
+    return trendData;
+  }, [range]);
   return (
     <>
       <div className="chart-legend">
@@ -137,7 +166,7 @@ function TrendChart({
       </div>
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={trendData} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid stroke="#233142" vertical={false} />
             <XAxis
               dataKey="year"
@@ -198,7 +227,7 @@ function TrendChart({
                 connectNulls={false}
               />
             )}
-            {type === "harmonized" && (
+            {type === "harmonized" && chartData.some((d) => d.year === "2013") && (
               <ReferenceLine
                 x="2013"
                 stroke="#8796a9"
@@ -292,8 +321,19 @@ function MonthlyChart({
   );
 }
 
-function Overview({ setPage }: { setPage: (page: PageName) => void }) {
+function Overview({
+  setPage,
+  filters,
+}: {
+  setPage: (page: PageName) => void;
+  filters: GlobalFilters;
+}) {
   const [selected, setSelected] = useState<Hotspot | null>(null);
+  const regionalHotspots = useMemo(
+    () => hotspots.filter((h) => isHotspotInRegion(h, filters.region)),
+    [filters.region],
+  );
+
   return (
     <>
       <PageIntro
@@ -308,8 +348,36 @@ function Overview({ setPage }: { setPage: (page: PageName) => void }) {
       <div className="kpi-grid">
         {[
           ["Total recorded detections", "3.84M", "+8.2% coverage", Flame],
-          ["Active observation period", "24.6 yrs", "2000 — 2024", CalendarDays],
-          ["Areas analysed", "186", "Administrative regions", Target],
+          [
+            "Active observation period",
+            filters.range === "2024 only" || filters.range === "Last 12 months"
+              ? "1.0 yr"
+              : "24.6 yrs",
+            filters.range === "2024 only"
+              ? "2024"
+              : filters.range === "Last 12 months"
+                ? "Aug 2023 — Aug 2024"
+                : "2000 — 2024",
+            CalendarDays,
+          ],
+          [
+            "Areas analysed",
+            filters.region === "California"
+              ? "58"
+              : filters.region === "Pacific Northwest"
+                ? "3"
+                : filters.region === "Western United States"
+                  ? "11"
+                  : "186",
+            filters.region === "California"
+              ? "California counties"
+              : filters.region === "Pacific Northwest"
+                ? "OR, WA, ID"
+                : filters.region === "Western United States"
+                  ? "Western US states"
+                  : "Administrative regions",
+            Target,
+          ],
           ["Data coverage", "94.2%", "1.8% partial", Radio],
         ].map(([label, value, note, Icon]) => (
           <Card key={label as string} className="kpi-card">
@@ -325,7 +393,7 @@ function Overview({ setPage }: { setPage: (page: PageName) => void }) {
       </div>
       <Card
         className="map-card"
-        eyebrow="Geospatial overview"
+        eyebrow={`Geospatial overview · ${filters.region}`}
         title="Active fire observation density"
         action={
           <button className="text-button" onClick={() => setPage("Fire Explorer")}>
@@ -333,7 +401,12 @@ function Overview({ setPage }: { setPage: (page: PageName) => void }) {
           </button>
         }
       >
-        <FireMap hotspots={hotspots} onSelect={setSelected} selected={selected} height={455} />
+        <FireMap
+          hotspots={regionalHotspots}
+          onSelect={setSelected}
+          selected={selected}
+          height={455}
+        />
         {selected && (
           <div className="map-selection-strip">
             <span className={`sensor-icon ${selected.family.toLowerCase()}`}>
@@ -369,7 +442,7 @@ function Overview({ setPage }: { setPage: (page: PageName) => void }) {
           eyebrow="Normalized activity index"
           action={<DemoBadge />}
         >
-          <TrendChart />
+          <TrendChart range={filters.range} />
         </Card>
         <Card
           title="Monthly distribution"
@@ -380,7 +453,7 @@ function Overview({ setPage }: { setPage: (page: PageName) => void }) {
         </Card>
       </div>
       <div className="content-grid three">
-        <Card title="Recent anomalies" eyebrow="Western United States">
+        <Card title="Recent anomalies" eyebrow={filters.region}>
           <div className="summary-list">
             <div>
               <span className="severity high">HIGH</span>
@@ -437,7 +510,13 @@ function Overview({ setPage }: { setPage: (page: PageName) => void }) {
   );
 }
 
-function FireExplorer() {
+function FireExplorer({
+  filters,
+  onFiltersChange,
+}: {
+  filters: GlobalFilters;
+  onFiltersChange: (filters: GlobalFilters) => void;
+}) {
   const [selected, setSelected] = useState<Hotspot | null>(hotspots[0]);
   const [sensor, setSensor] = useState("All sensors");
   const [confidence, setConfidence] = useState(60);
@@ -445,13 +524,22 @@ function FireExplorer() {
   const [drawMode, setDrawMode] = useState(false);
   const [aoiPoints, setAoiPoints] = useState<Array<[number, number]>>([]);
   const [filtersOpen, setFiltersOpen] = useState(true);
-  const filtered = hotspots.filter(
-    (point) =>
-      (sensor === "All sensors" || point.sensor === sensor) && point.confidence >= confidence,
+
+  const filtered = useMemo(
+    () =>
+      hotspots.filter(
+        (point) =>
+          isHotspotInRegion(point, filters.region) &&
+          (sensor === "All sensors" || point.sensor === sensor) &&
+          point.confidence >= confidence,
+      ),
+    [filters.region, sensor, confidence],
   );
+
   const reset = () => {
     setSensor("All sensors");
     setConfidence(60);
+    onFiltersChange({ ...filters, region: "Western United States" });
   };
   return (
     <div className="explorer-page">
@@ -518,10 +606,14 @@ function FireExplorer() {
             <option>Unknown</option>
           </select>
           <label className="field-label">Area of interest</label>
-          <select>
+          <select
+            value={filters.region}
+            onChange={(e) => onFiltersChange({ ...filters, region: e.target.value })}
+          >
             <option>Western United States</option>
             <option>California</option>
             <option>Pacific Northwest</option>
+            <option>Global</option>
           </select>
           <button
             className={`button ${drawMode ? "primary" : "secondary"} full`}
@@ -648,7 +740,13 @@ function FireExplorer() {
   );
 }
 
-function HistoricalCalendar() {
+function HistoricalCalendar({
+  filters,
+  onFiltersChange,
+}: {
+  filters: GlobalFilters;
+  onFiltersChange: (filters: GlobalFilters) => void;
+}) {
   const [year, setYear] = useState(2024);
   const [view, setView] = useState<"Monthly" | "Yearly">("Monthly");
   const monthNames = [
@@ -677,6 +775,16 @@ function HistoricalCalendar() {
       })),
     [year],
   );
+
+  const filteredTrendData = useMemo(() => {
+    if (filters.range === "2024 only") {
+      return trendData.filter((d) => Number(d.year) >= 2023);
+    }
+    if (filters.range === "Last 12 months") {
+      return trendData.filter((d) => Number(d.year) >= 2021);
+    }
+    return trendData;
+  }, [filters.range]);
   return (
     <>
       <PageIntro
@@ -707,12 +815,17 @@ function HistoricalCalendar() {
         title={
           view === "Monthly" ? `${year} monthly activity profile` : "Year-by-year activity profile"
         }
-        eyebrow="Normalized observation index"
+        eyebrow={`Normalized observation index · ${filters.region}`}
         action={
-          <select className="compact-select">
+          <select
+            className="compact-select"
+            value={filters.region}
+            onChange={(e) => onFiltersChange({ ...filters, region: e.target.value })}
+          >
             <option>Western United States</option>
             <option>California</option>
             <option>Pacific Northwest</option>
+            <option>Global</option>
           </select>
         }
       >
@@ -758,10 +871,19 @@ function HistoricalCalendar() {
         </div>
       </Card>
       <div className="content-grid two-one">
-        <Card title="Historical yearly trend" eyebrow="2000 — 2024">
+        <Card
+          title="Historical yearly trend"
+          eyebrow={
+            filters.range === "2024 only"
+              ? "2024 · Active range"
+              : filters.range === "Last 12 months"
+                ? "2023 — 2024 · Active range"
+                : "2000 — 2024"
+          }
+        >
           <div style={{ height: 265 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData} margin={{ left: -20, right: 4, top: 12 }}>
+              <AreaChart data={filteredTrendData} margin={{ left: -20, right: 4, top: 12 }}>
                 <defs>
                   <linearGradient id="historyFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0" stopColor="#ff7547" stopOpacity=".28" />
@@ -813,7 +935,12 @@ function HistoricalCalendar() {
   );
 }
 
-function SensorComparison() {
+function SensorComparison({ filters }: { filters: GlobalFilters }) {
+  const regionalHotspots = useMemo(
+    () => hotspots.filter((h) => isHotspotInRegion(h, filters.region)),
+    [filters.region],
+  );
+
   return (
     <>
       <PageIntro
@@ -847,23 +974,23 @@ function SensorComparison() {
       <div className="comparison-maps">
         <Card
           title="MODIS observations"
-          eyebrow="1 km nominal resolution"
+          eyebrow={`1 km nominal resolution · ${filters.region}`}
           action={<span className="sensor-tag modis">MODIS Aqua</span>}
         >
-          <FireMap hotspots={hotspots} family="MODIS" compact height={290} />
+          <FireMap hotspots={regionalHotspots} family="MODIS" compact height={290} />
         </Card>
         <Card
           title="VIIRS observations"
-          eyebrow="375 m nominal resolution"
+          eyebrow={`375 m nominal resolution · ${filters.region}`}
           action={<span className="sensor-tag viirs">VIIRS S-NPP</span>}
         >
-          <FireMap hotspots={hotspots} family="VIIRS" compact height={290} />
+          <FireMap hotspots={regionalHotspots} family="VIIRS" compact height={290} />
         </Card>
       </div>
       <div className="content-grid two-one">
         <Card
           title="Monthly detection comparison"
-          eyebrow="Raw observations · not normalized"
+          eyebrow={`Raw observations · ${filters.region}`}
           action={<DemoBadge />}
         >
           <MonthlyChart comparison height={280} />
@@ -924,7 +1051,7 @@ function SensorComparison() {
   );
 }
 
-function HarmonizedActivity() {
+function HarmonizedActivity({ filters }: { filters: GlobalFilters }) {
   return (
     <>
       <PageIntro
@@ -950,10 +1077,10 @@ function HarmonizedActivity() {
         eyebrow="Raw observations and experimental estimate"
         action={<DemoBadge />}
       >
-        <TrendChart type="harmonized" height={380} />
+        <TrendChart type="harmonized" height={380} range={filters.range} />
       </Card>
       <div className="content-grid three">
-        <Card title="Regional calibration" eyebrow="Western United States">
+        <Card title="Regional calibration" eyebrow={filters.region}>
           <div className="calibration-stat">
             <div>
               <span>Overlap period</span>
@@ -1031,7 +1158,13 @@ function HarmonizedActivity() {
   );
 }
 
-function AnomalyDetection() {
+function AnomalyDetection({
+  filters,
+  onFiltersChange,
+}: {
+  filters: GlobalFilters;
+  onFiltersChange: (filters: GlobalFilters) => void;
+}) {
   const [selectedMonth, setSelectedMonth] = useState("August 2024");
   return (
     <>
@@ -1041,9 +1174,14 @@ function AnomalyDetection() {
         text="Identify activity that differs from the historical seasonal pattern while accounting for data coverage."
       >
         <div className="control-row">
-          <select>
+          <select
+            value={filters.region}
+            onChange={(e) => onFiltersChange({ ...filters, region: e.target.value })}
+          >
             <option>Western United States</option>
             <option>California</option>
+            <option>Pacific Northwest</option>
+            <option>Global</option>
           </select>
           <input type="month" defaultValue="2024-08" />
         </div>
@@ -1058,7 +1196,7 @@ function AnomalyDetection() {
       <div className="content-grid two-one">
         <Card
           title="Activity versus historical baseline"
-          eyebrow="Monthly normalized index"
+          eyebrow={`Monthly normalized index · ${filters.region}`}
           action={<DemoBadge />}
         >
           <MonthlyChart anomaly height={310} />
@@ -1074,7 +1212,7 @@ function AnomalyDetection() {
           <dl className="detail-list compact">
             <div>
               <dt>Region</dt>
-              <dd>Western United States</dd>
+              <dd>{filters.region}</dd>
             </div>
             <div>
               <dt>Observed activity</dt>
@@ -1140,7 +1278,7 @@ function AnomalyDetection() {
   );
 }
 
-function DataQuality() {
+function DataQuality({ filters }: { filters: GlobalFilters }) {
   const [qualityYear, setQualityYear] = useState(2024);
   return (
     <>
@@ -1328,7 +1466,7 @@ function DataQuality() {
               <AlertTriangle size={16} />
               <p>
                 <strong>Regional calibration</strong>
-                <span>Not validated outside the selected AOI.</span>
+                <span>Calibrated benchmark for {filters.region}.</span>
               </p>
             </div>
           </div>
@@ -1486,19 +1624,19 @@ export default function App() {
   });
   const content =
     page === "Overview" ? (
-      <Overview setPage={setPage} />
+      <Overview setPage={setPage} filters={filters} />
     ) : page === "Fire Explorer" ? (
-      <FireExplorer />
+      <FireExplorer filters={filters} onFiltersChange={setFilters} />
     ) : page === "Historical Calendar" ? (
-      <HistoricalCalendar />
+      <HistoricalCalendar filters={filters} onFiltersChange={setFilters} />
     ) : page === "Sensor Comparison" ? (
-      <SensorComparison />
+      <SensorComparison filters={filters} />
     ) : page === "Harmonized Activity" ? (
-      <HarmonizedActivity />
+      <HarmonizedActivity filters={filters} />
     ) : page === "Anomaly Detection" ? (
-      <AnomalyDetection />
+      <AnomalyDetection filters={filters} onFiltersChange={setFilters} />
     ) : (
-      <DataQuality />
+      <DataQuality filters={filters} />
     );
   return (
     <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
