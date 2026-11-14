@@ -1,22 +1,44 @@
 import os
+import argparse
 from pathlib import Path
+from typing import Optional
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from shapely.geometry import box
+
+try:
+    from .aoi import get_aoi_bbox
+except ImportError:
+    from aoi import get_aoi_bbox
 
 # Set headless backend for environment compatibility
 os.environ["MPLBACKEND"] = "Agg"
 
 
 def plot_preview(
-    geojson_path: str = "gis/output/palisades_cells.geojson",
-    output_png: str = "gis/output/preview.png"
+    region: str = "palisades",
+    geojson_path: Optional[str] = None,
+    output_png: Optional[str] = None
 ):
     """Plot GeoJSON cells colored by total hotspot count and save preview image."""
-    p_geojson = Path(geojson_path)
-    if not p_geojson.is_file():
-        raise FileNotFoundError(f"GeoJSON file not found at: {geojson_path}")
+    reg_clean = region.lower().strip()
 
+    if not geojson_path:
+        cand_geojson = Path(f"gis/output/{reg_clean}_cells.geojson")
+        if cand_geojson.is_file():
+            geojson_path = str(cand_geojson)
+        elif reg_clean in ["palisades", "palisades_la"] and Path("gis/output/palisades_cells.geojson").is_file():
+            geojson_path = "gis/output/palisades_cells.geojson"
+        else:
+            raise FileNotFoundError(f"Could not locate GeoJSON for region '{region}'.")
+
+    if not output_png:
+        output_png = f"gis/output/{reg_clean}_preview.png"
+        if reg_clean in ["palisades", "palisades_la"]:
+            output_png = "gis/output/preview.png"
+
+    p_geojson = Path(geojson_path)
+    print(f"Loading GeoJSON from: {p_geojson}")
     gdf = gpd.read_file(p_geojson)
 
     # Dissolve by cell_id to compute total count across all months/sensors
@@ -30,26 +52,30 @@ def plot_preview(
         cmap="YlOrRd",
         legend=True,
         edgecolor="black",
-        linewidth=0.4,
+        linewidth=0.2,
         alpha=0.85,
         ax=ax,
         legend_kwds={"label": "Total Hotspot Count per Cell", "orientation": "vertical"}
     )
 
-    # Reference AOI bounding box (widened to -118.42 E)
-    aoi_polygon = box(-118.75, 34.0, -118.42, 34.2)
+    # Reference AOI bounding box
+    bbox = get_aoi_bbox(region=reg_clean, df=gdf.rename(columns={"geometry": "geom"}).assign(
+        latitude=gdf.geometry.centroid.y,
+        longitude=gdf.geometry.centroid.x
+    ))
+    aoi_polygon = box(bbox["min_lon"], bbox["min_lat"], bbox["max_lon"], bbox["max_lat"])
     aoi_series = gpd.GeoSeries([aoi_polygon], crs="EPSG:4326")
     aoi_series.boundary.plot(
         ax=ax,
         color="royalblue",
         linestyle="--",
         linewidth=1.8,
-        label="Default AOI (34.0-34.2 N, 118.75-118.42 W)"
+        label=f"AOI BBox ({bbox['min_lat']}-{bbox['max_lat']} N, {bbox['min_lon']}-{bbox['max_lon']} E)"
     )
 
-    ax.set_title("Palisades Active Fire Detections\nTotal Hotspot Count per 0.01° Grid Cell", fontsize=14, pad=12)
-    ax.set_xlabel("Longitude (°W)", fontsize=11)
-    ax.set_ylabel("Latitude (°N)", fontsize=11)
+    ax.set_title(f"{region.replace('_', ' ').title()} Active Fire Detections\nTotal Hotspot Count per 0.01° Grid Cell", fontsize=14, pad=12)
+    ax.set_xlabel("Longitude (°)", fontsize=11)
+    ax.set_ylabel("Latitude (°)", fontsize=11)
     ax.grid(True, linestyle=":", alpha=0.6)
     ax.legend(loc="upper left")
 
@@ -61,5 +87,15 @@ def plot_preview(
     print(f"Preview plot successfully saved to: {out_file.resolve()}")
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Region-aware preview map generation.")
+    parser.add_argument("--region", type=str, default="palisades", help="Region name")
+    parser.add_argument("--input", type=str, default=None, help="Input GeoJSON path")
+    parser.add_argument("--output", type=str, default=None, help="Output PNG path")
+
+    args = parser.parse_args()
+    plot_preview(region=args.region, geojson_path=args.input, output_png=args.output)
+
+
 if __name__ == "__main__":
-    plot_preview()
+    main()

@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 from pathlib import Path
 from typing import Tuple, Dict, Any, Optional
 import pandas as pd
@@ -7,8 +8,10 @@ import numpy as np
 
 try:
     from .grid import assign_grid
+    from .export_geojson import resolve_input_csv
 except ImportError:
     from grid import assign_grid
+    from export_geojson import resolve_input_csv
 
 
 def compare_sensors_by_day(
@@ -104,27 +107,11 @@ def compare_sensors_by_day(
 def compute_sensor_agreement(
     df: pd.DataFrame,
     cell_size: float = 0.01,
-    output_csv: Optional[str] = "gis/output/sensor_agreement.csv"
+    output_csv: Optional[str] = None,
+    region: str = "palisades"
 ) -> pd.DataFrame:
     """
     Compute sensor agreement per year and day/night period (daynight column).
-
-    Columns in resulting CSV:
-    year, daynight, modis_only, viirs_only, both
-
-    Parameters:
-    -----------
-    df : pd.DataFrame
-        Hotspot DataFrame with 'date', 'sensor', 'daynight', and coordinate columns.
-    cell_size : float, optional (default=0.01)
-        Cell size in degrees.
-    output_csv : str, optional
-        Path to save the summary CSV.
-
-    Returns:
-    --------
-    pd.DataFrame:
-        Table containing counts of modis_only, viirs_only, and both per (year, daynight).
     """
     work_df = df.copy()
 
@@ -180,43 +167,52 @@ def compute_sensor_agreement(
         .reset_index(drop=True)
     )
 
-    if output_csv:
-        out_p = Path(output_csv)
-        out_p.parent.mkdir(parents=True, exist_ok=True)
-        summary_df.to_csv(out_p, index=False)
-        print(f"Saved sensor agreement table to: {out_p.resolve()}")
+    if not output_csv:
+        output_csv = f"gis/output/{region}_sensor_agreement.csv"
+        # For default palisades backward compatibility, also keep default path
+        if region in ["palisades", "palisades_la"]:
+            output_csv = "gis/output/sensor_agreement.csv"
+
+    out_p = Path(output_csv)
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+    summary_df.to_csv(out_p, index=False)
+    print(f"Saved sensor agreement table to: {out_p.resolve()}")
 
     return summary_df
 
 
 def main():
-    csv_path = Path("gis/data/palisades_la_combined.csv")
-    if not csv_path.is_file():
-        csv_path = Path(__file__).resolve().parent / "data" / "palisades_la_combined.csv"
+    parser = argparse.ArgumentParser(description="Region-aware sensor comparison and agreement analysis.")
+    parser.add_argument("--region", type=str, default="palisades", help="Region name")
+    parser.add_argument("--input", type=str, default=None, help="Input CSV path")
+    parser.add_argument("--output", type=str, default=None, help="Output CSV path")
+    parser.add_argument("--cell-size", type=float, default=0.01, help="Cell size in degrees")
 
-    print(f"Loading data from: {csv_path}")
-    df = pd.read_csv(csv_path)
+    args = parser.parse_args()
+    p_csv = resolve_input_csv(args.region, args.input)
 
-    print("\nRunning compare_sensors_by_day (2012-2026)...")
-    cell_day_df, summary = compare_sensors_by_day(df)
+    print(f"Loading data for region '{args.region}' from: {p_csv}")
+    df = pd.read_csv(p_csv, low_memory=False)
 
-    print("\n" + "=" * 60)
-    print("SAME-DAY SENSOR COMPARISON SUMMARY (2012 - 2026)")
-    print("=" * 60)
-    print(f"Total Unique Cell-Days Analyzed : {summary['total_cell_days']}")
-    print(f"  - MODIS only                  : {summary['modis_only']} cell-days ({summary['modis_only']/summary['total_cell_days']*100:.1f}%)")
-    print(f"  - VIIRS only                  : {summary['viirs_only']} cell-days ({summary['viirs_only']/summary['total_cell_days']*100:.1f}%)")
-    print(f"  - Both sensors on same day    : {summary['both']} cell-days ({summary['both']/summary['total_cell_days']*100:.1f}%)")
+    print(f"\nRunning compare_sensors_by_day (2012-2026) for {args.region.upper()}...")
+    cell_day_df, summary = compare_sensors_by_day(df, cell_size=args.cell_size)
+
+    print("\n" + "=" * 65)
+    print(f"SAME-DAY SENSOR COMPARISON: {args.region.upper()} (2012 - 2026)")
+    print("=" * 65)
+    print(f"Total Unique Cell-Days Analyzed : {summary['total_cell_days']:,}")
+    print(f"  - MODIS only                  : {summary['modis_only']:,} cell-days ({summary['modis_only']/summary['total_cell_days']*100:.1f}%)")
+    print(f"  - VIIRS only                  : {summary['viirs_only']:,} cell-days ({summary['viirs_only']/summary['total_cell_days']*100:.1f}%)")
+    print(f"  - Both sensors on same day    : {summary['both']:,} cell-days ({summary['both']/summary['total_cell_days']*100:.1f}%)")
     print(f"\nMODIS Recovery Rate:")
-    print(f"  - Total MODIS cell-days       : {summary['total_modis_cell_days']}")
-    print(f"  - Also detected by VIIRS      : {summary['both']} ({summary['share_modis_seen_by_viirs']*100:.2f}%)")
-    print("=" * 60)
+    print(f"  - Total MODIS cell-days       : {summary['total_modis_cell_days']:,}")
+    print(f"  - Also detected by VIIRS      : {summary['both']:,} ({summary['share_modis_seen_by_viirs']*100:.2f}%)")
+    print("=" * 65)
 
     print("\nComputing breakdown by year and daynight...")
-    out_csv = "gis/output/sensor_agreement.csv"
-    agreement_df = compute_sensor_agreement(df, output_csv=out_csv)
+    agreement_df = compute_sensor_agreement(df, cell_size=args.cell_size, output_csv=args.output, region=args.region)
 
-    print("\nFirst 10 rows of sensor_agreement.csv:")
+    print("\nSample rows of sensor_agreement.csv:")
     print(agreement_df.head(10).to_string(index=False))
 
 

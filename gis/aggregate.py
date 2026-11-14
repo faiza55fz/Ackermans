@@ -55,22 +55,24 @@ def aggregate_by_cell(
     else:
         work_df["frp"] = np.nan
 
-    # Ensure date string for unique day counting
     work_df["date_str"] = dates.dt.strftime("%Y-%m-%d")
+    work_df["frp_missing"] = work_df["frp"].isna().astype(int)
 
-    # Group by cell, period, and sensor
+    # High-performance vectorized aggregation
     group_cols = ["cell_id", "cell_x", "cell_y", "period", "sensor"]
     agg_df = (
         work_df.groupby(group_cols, as_index=False)
         .agg(
             count=("date_str", "count"),
             days=("date_str", "nunique"),
-            frp_sum=("frp", lambda s: s.sum(min_count=1)),
-            frp_missing_count=("frp", lambda s: s.isna().sum()),
+            frp_sum=("frp", "sum"),
+            frp_missing_count=("frp_missing", "sum"),
         )
     )
 
-    # Round frp_sum for clean output where not NaN
+    # Where all FRP values in a group were missing, sum should be NaN
+    all_missing = agg_df["frp_missing_count"] == agg_df["count"]
+    agg_df.loc[all_missing, "frp_sum"] = np.nan
     agg_df["frp_sum"] = agg_df["frp_sum"].round(2)
 
     # Sort for deterministic output
