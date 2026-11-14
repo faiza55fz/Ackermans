@@ -1,0 +1,3 @@
+# Override parent LFS filters for DATA directory
+*.png -filter -merge -diff
+*.parquet -filter -merge -diff
