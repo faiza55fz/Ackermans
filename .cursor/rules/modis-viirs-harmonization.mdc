@@ -1,0 +1,39 @@
+---
+description: Coding and data rules for MODIS–VIIRS fire hotspot harmonization
+alwaysApply: true
+---
+
+# MODIS–VIIRS harmonization
+
+Python 3.11. Core logic uses pandas, geopandas, statsmodels, and scikit-learn. Read settings from `config.yaml` (PyYAML). Do not put core logic in notebooks.
+
+## Layout
+
+- `src/ingest`, `src/clean`, `src/grid`, `src/models`, `src/validate`, `src/export`
+- `tests/` mirrors `src/`
+- `data/raw` is read-only input; write only under `data/processed`
+
+## Functions
+
+Keep functions small and pure: inputs in, values out, no hidden file or global writes. Every function has type hints, a docstring, and a pytest test.
+
+```python
+# BAD: writes raw data and hides the estimate
+raw_path.write_text(updated)
+out = observed.combine_first(estimated)
+
+# GOOD: new frame, estimate flagged
+def attach_estimates(observed: gpd.GeoDataFrame, estimated: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+    """Return observed and estimated rows with is_estimated set."""
+    estimated = estimated.copy()
+    estimated["is_estimated"] = True
+    observed = observed.copy()
+    observed["is_estimated"] = False
+    return pd.concat([observed, estimated], ignore_index=True)
+```
+
+## Data safety
+
+- Never overwrite or delete files in `data/raw`.
+- Never merge observed and estimated values unless the result has an `is_estimated` column.
+- Mark observed rows `is_estimated=False` and estimated rows `is_estimated=True`.
