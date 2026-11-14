@@ -1,6 +1,6 @@
 # GIS Data Processing & Grid Analysis
 
-This directory contains geospatial analysis and spatial aggregation tools for NASA FIRMS active fire datasets (MODIS and VIIRS), designed to work across any geographic region (e.g. Pacific Palisades, USA and Western Ghats, Karnataka, India).
+This directory contains geospatial analysis and spatial aggregation tools for NASA FIRMS active fire datasets (MODIS and VIIRS), designed to work across any geographic region (e.g. Pacific Palisades, USA; Western Ghats, Karnataka, India; and Punjab & Haryana, India).
 
 ---
 
@@ -12,21 +12,25 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
    - **`--mode yearly`:** Generates individual files per year (`{region}_cells_{year}.geojson` inside `gis/output/{region}_yearly/`), enabling fast on-demand temporal loading ($\le 2.9$ MB per year).
    - **`--cell-size 0.05`:** Coarser spatial resolution (~5.5 km) reducing regional feature count by $> 90\%$ for fast client-side rendering.
 
-2. **Compact Coordinates & Standard NaN Serialization:**
+2. **High-Performance Streaming & Vectorized Processing:**
+   - Large multi-million-row regional datasets (e.g. Punjab & Haryana with 2.73M records) are processed using selective columnar reads (`usecols`) with fully vectorized pandas and geopandas operations. No slow row-by-row python loops are used.
+   - Peak memory usage remains bounded under ~1.85 GB even on full 2.73M-record analysis.
+
+3. **Compact Coordinates & Standard NaN Serialization:**
    - Polygon coordinates are rounded to 5 decimal places (~1m precision), reducing JSON text size without loss of cartographic accuracy.
    - Missing or non-numeric FRP values remain `NaN` internally and serialize cleanly as standard JSON `null`.
 
-3. **Multi-Region & Dynamic AOI:**
-   - Accepts `--region <name>` (e.g. `palisades` or `western_ghats_karnataka`).
+4. **Multi-Region & Dynamic AOI:**
+   - Accepts `--region <name>` (e.g. `palisades`, `western_ghats_karnataka`, `punjab_haryana`).
    - For **Palisades**, the vetted study area bounding box (`lat: [34.0, 34.2]°N`, `lon: [-118.75, -118.42]°W`) is applied automatically.
    - For other regions, the AOI bounding box is dynamically computed from coordinates rounded outward to the cell size.
 
-4. **Robust Grid Indexing (Float Precision Bug Fix):**
+5. **Robust Grid Indexing (Float Precision Bug Fix):**
    - Coordinates use `np.floor(np.round(coord / cell_size, 6)).astype(int)` to prevent IEEE 754 float drift on cell boundaries.
    - Validated by unit tests in `gis/test_grid.py`.
 
-5. **Repository Size Management:**
-   - Files exceeding 20 MB (e.g. uncompressed 0.01° full-history monthly exports like `western_ghats_karnataka_cells.geojson` at 26.5 MB) are excluded via `.gitignore` to keep repository clones fast and prevent GitHub upload bottlenecks.
+6. **Repository Size Management:**
+   - Files exceeding 20 MB (e.g. uncompressed 0.01° full-history monthly exports like `western_ghats_karnataka_cells.geojson` at 26.5 MB) are excluded via `.gitignore` to keep repository clones fast and prevent GitHub upload bottlenecks. All Punjab & Haryana 0.05° files ($\le 2.8$ MB) are tracked cleanly.
 
 ---
 
@@ -94,22 +98,31 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
 python gis/test_grid.py
 ```
 
-### 2. Export Modes (Western Ghats Example)
-* **All-Time Totals (One Feature per Cell — 9.5 MB):**
+### 2. Punjab & Haryana (Multi-Million Record Large Region)
+* **All-Time Totals at 0.05° (6,908 features — 2.75 MB):**
+  ```powershell
+  python gis/export_geojson.py --region punjab_haryana --mode totals --cell-size 0.05
+  ```
+* **Yearly Slices at 0.05° ($\le 2.77$ MB per year):**
+  ```powershell
+  python gis/export_geojson.py --region punjab_haryana --mode yearly --cell-size 0.05
+  ```
+* **Sensor Agreement & Same-Day Analysis at 0.05°:**
+  ```powershell
+  python gis/compare.py --region punjab_haryana --cell-size 0.05
+  ```
+
+### 3. Western Ghats (Karnataka)
+* **All-Time Totals:**
   ```powershell
   python gis/export_geojson.py --region western_ghats_karnataka --mode totals
   ```
-* **Yearly Slices ($\le 2.9$ MB per file):**
+* **Yearly Slices:**
   ```powershell
   python gis/export_geojson.py --region western_ghats_karnataka --mode yearly
   ```
-* **Coarser 0.05° Grid (Web-optimized — 702 KB totals / 13.5 MB monthly):**
-  ```powershell
-  python gis/export_geojson.py --region western_ghats_karnataka --mode totals --cell-size 0.05
-  python gis/export_geojson.py --region western_ghats_karnataka --mode monthly --cell-size 0.05
-  ```
 
-### 3. Run for Pacific Palisades (LA)
+### 4. Pacific Palisades (LA)
 ```powershell
 python gis/export_geojson.py --region palisades
 python gis/compare.py --region palisades

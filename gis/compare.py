@@ -1,6 +1,8 @@
 import os
 import sys
+import time
 import argparse
+import tracemalloc
 from pathlib import Path
 from typing import Tuple, Dict, Any, Optional
 import pandas as pd
@@ -122,16 +124,13 @@ def compute_sensor_agreement(
     work_df["date_str"] = dates.dt.strftime("%Y-%m-%d")
     work_df["year"] = dates.dt.year
 
-    # Ensure daynight exists and is uppercase
     if "daynight" in work_df.columns:
         work_df["daynight"] = work_df["daynight"].fillna("Unknown").astype(str).str.upper()
     else:
         work_df["daynight"] = "Unknown"
 
-    # Filter to 2012-01-01 onward
     filtered_df = work_df[work_df["date_str"] >= "2012-01-01"].copy()
 
-    # Unique cell-date-daynight per sensor
     modis = (
         filtered_df[filtered_df["sensor"].str.upper() == "MODIS"][
             ["cell_id", "date_str", "year", "daynight"]
@@ -150,7 +149,6 @@ def compute_sensor_agreement(
     )
     viirs["viirs"] = True
 
-    # Merge by cell_id, date, year, daynight
     merged = pd.merge(modis, viirs, on=["cell_id", "date", "year", "daynight"], how="outer")
     merged["modis"] = merged["modis"].eq(True)
     merged["viirs"] = merged["viirs"].eq(True)
@@ -159,7 +157,6 @@ def compute_sensor_agreement(
     merged["viirs_only"] = (~merged["modis"] & merged["viirs"]).astype(int)
     merged["both"] = (merged["modis"] & merged["viirs"]).astype(int)
 
-    # Group by year and daynight
     summary_df = (
         merged.groupby(["year", "daynight"], as_index=False)[["modis_only", "viirs_only", "both"]]
         .sum()
@@ -169,7 +166,6 @@ def compute_sensor_agreement(
 
     if not output_csv:
         output_csv = f"gis/output/{region}_sensor_agreement.csv"
-        # For default palisades backward compatibility, also keep default path
         if region in ["palisades", "palisades_la"]:
             output_csv = "gis/output/sensor_agreement.csv"
 
@@ -191,10 +187,14 @@ def main():
     args = parser.parse_args()
     p_csv = resolve_input_csv(args.region, args.input)
 
-    print(f"Loading data for region '{args.region}' from: {p_csv}")
-    df = pd.read_csv(p_csv, low_memory=False)
+    tracemalloc.start()
+    t_start = time.time()
 
-    print(f"\nRunning compare_sensors_by_day (2012-2026) for {args.region.upper()}...")
+    print(f"Loading data for region '{args.region}' from: {p_csv}")
+    use_cols = ["latitude", "longitude", "date", "sensor", "daynight"]
+    df = pd.read_csv(p_csv, usecols=lambda c: c in use_cols, low_memory=False)
+
+    print(f"\nRunning compare_sensors_by_day (2012-2026) for {args.region.upper()} (cell_size={args.cell_size}°)...")
     cell_day_df, summary = compare_sensors_by_day(df, cell_size=args.cell_size)
 
     print("\n" + "=" * 65)
@@ -212,7 +212,13 @@ def main():
     print("\nComputing breakdown by year and daynight...")
     agreement_df = compute_sensor_agreement(df, cell_size=args.cell_size, output_csv=args.output, region=args.region)
 
-    print("\nSample rows of sensor_agreement.csv:")
+    t_end = time.time()
+    total_time = t_end - t_start
+    current_mem, peak_mem = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    print(f"\nExecution stats: Run time = {total_time:.2f}s | Peak Memory = {peak_mem / (1024*1024):.1f} MB")
+    print("\nFirst 10 rows of sensor_agreement.csv:")
     print(agreement_df.head(10).to_string(index=False))
 
 

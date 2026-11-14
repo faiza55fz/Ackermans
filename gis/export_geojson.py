@@ -1,6 +1,8 @@
 import os
 import sys
+import time
 import argparse
+import tracemalloc
 from pathlib import Path
 from typing import Optional, Union, List, Dict, Any
 import numpy as np
@@ -51,7 +53,6 @@ def export_cells_to_geojson(
     }
     geometries = [geom_map[(int(cx), int(cy))] for cx, cy in zip(df["cell_x"], df["cell_y"])]
 
-    # Exclude helper coordinate columns from properties if desired
     exclude_cols = {"cell_x", "cell_y", "geometry"}
     prop_cols = [c for c in df.columns if c not in exclude_cols]
 
@@ -128,7 +129,6 @@ def export_totals(
     merged["viirs_count"] = merged["viirs_count"].fillna(0).astype(int)
     merged["viirs_days"] = merged["viirs_days"].fillna(0).astype(int)
 
-    # Determine sensors label
     has_m = merged["modis_count"] > 0
     has_v = merged["viirs_count"] > 0
     merged["sensor"] = np.where(has_m & has_v, "BOTH", np.where(has_m, "MODIS", "VIIRS"))
@@ -159,7 +159,6 @@ def export_yearly(
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # Perform yearly aggregation
     yearly_agg = aggregate_by_cell(gridded_df, period="Y")
     years = sorted(yearly_agg["period"].unique())
 
@@ -168,7 +167,8 @@ def export_yearly(
 
     for yr in years:
         yr_df = yearly_agg[yearly_agg["period"] == yr].copy()
-        yr_file = out_dir / f"{region}_cells_{yr}.geojson"
+        suffix = f"_{cell_size}" if cell_size != 0.01 else ""
+        yr_file = out_dir / f"{region}_cells_{yr}{suffix}.geojson"
         gdf = export_cells_to_geojson(
             yr_df,
             output_path=yr_file,
@@ -181,6 +181,7 @@ def export_yearly(
             "year": yr,
             "features": len(gdf),
             "size_str": size_str,
+            "size_bytes": size_bytes,
             "path": str(yr_file)
         })
 
@@ -219,15 +220,22 @@ def run_pipeline(
     coord_precision: int = 5
 ):
     """Run full GIS processing and analysis pipeline for any region and export mode."""
+    tracemalloc.start()
+    t_start = time.time()
+
     p_csv = resolve_input_csv(region, csv_path)
 
     print("=" * 65)
     print(f"GIS PROCESSING PIPELINE — REGION: {region.upper()} | MODE: {mode.upper()} | CELL SIZE: {cell_size}°")
     print("=" * 65)
-    print(f"1. Loading dataset: {p_csv}")
-    df = pd.read_csv(p_csv, low_memory=False)
+
+    # Memory-efficient reading of only required columns
+    needed_cols = ["latitude", "longitude", "date", "sensor", "frp"]
+    print(f"1. Loading dataset: {p_csv} (reading required columns: {needed_cols})")
+    df = pd.read_csv(p_csv, usecols=needed_cols, low_memory=False)
     total_raw_rows = len(df)
-    print(f"   Loaded {total_raw_rows:,} total records.")
+    t_loaded = time.time()
+    print(f"   Loaded {total_raw_rows:,} records in {t_loaded - t_start:.2f}s.")
 
     # 2. AOI Bounding box & clipping
     bbox = get_aoi_bbox(region=region, df=df, cell_size=cell_size)
@@ -238,11 +246,14 @@ def run_pipeline(
     clipped_gdf = clip_to_aoi(df, region=region, cell_size=cell_size)
     retained_rows = len(clipped_gdf)
     clipped_rows = total_raw_rows - retained_rows
-    print(f"   Retained {retained_rows:,} records within AOI ({clipped_rows:,} clipped).")
+    t_clipped = time.time()
+    print(f"   Retained {retained_rows:,} records within AOI ({clipped_rows:,} clipped) in {t_clipped - t_loaded:.2f}s.")
 
     # 3. Spatial Grid Assignment
     print(f"3. Assigning spatial grid (cell_size={cell_size} deg)...")
     gridded_df = assign_grid(clipped_gdf, cell_size=cell_size)
+    t_gridded = time.time()
+    print(f"   Assigned grid cells in {t_gridded - t_clipped:.2f}s.")
 
     # 4. Mode-based Export
     mode_clean = mode.lower().strip()
@@ -279,9 +290,7 @@ def run_pipeline(
     print(f"ANALYSIS RESULTS: {region.upper()} (cell_size={cell_size}°)")
     print("=" * 65)
 
-    year_col = "year"
-    if year_col not in gridded_df.columns:
-        gridded_df["year"] = pd.to_datetime(gridded_df["date"], errors="coerce").dt.year
+    gridded_df["year"] = pd.to_datetime(gridded_df["date"], errors="coerce").dt.year
 
     cells_per_sensor = gridded_df.groupby("sensor")["cell_id"].nunique()
     print("Unique cells with hotspots per sensor (entire dataset):")
@@ -310,10 +319,22 @@ def run_pipeline(
     if modis_cnt > 0:
         print(f"  - MODIS spatial recovery by VIIRS  : {both_cnt / modis_cnt * 100:.2f}%")
 
+    t_end = time.time()
+    total_time = t_end - t_start
+    current_mem, peak_mem = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    peak_mb = peak_mem / (1024 * 1024)
+    print("\n" + "-" * 65)
+    print(f"PERFORMANCE STATS:")
+    print(f"  - Total Run Time : {total_time:.2f} seconds ({total_time / 60:.2f} minutes)")
+    print(f"  - Peak Memory    : {peak_mb:.1f} MB ({peak_mb / 1024:.2f} GB)")
+    print("-" * 65)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Region-aware GIS hotspot aggregation and GeoJSON export.")
-    parser.add_argument("--region", type=str, default="palisades", help="Region name (e.g. 'palisades', 'western_ghats_karnataka')")
+    parser.add_argument("--region", type=str, default="palisades", help="Region name (e.g. 'palisades', 'western_ghats_karnataka', 'punjab_haryana')")
     parser.add_argument("--input", type=str, default=None, help="Path to input CSV dataset")
     parser.add_argument("--output", type=str, default=None, help="Path to output GeoJSON file or directory")
     parser.add_argument("--cell-size", type=float, default=0.01, help="Spatial grid cell size in degrees (default: 0.01)")
