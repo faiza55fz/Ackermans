@@ -2,20 +2,20 @@
 @import "tailwindcss";
 
 :root {
+  /* Primary palette */
+  --bg: #0B1220; /* Dark background */
+  --panel: #111C2E; /* Card background */
+  --panel-2: #17243A; /* Secondary background */
+  --border: #233247; /* Updated border color */
+  --muted: #94A3B8; /* Secondary text */
+  --text: #F8FAFC; /* Primary text */
+  --orange: #FF8C42; /* Fire orange */
+  --amber: #FACC15; /* Warning yellow */
+  --cyan: #EF4444; /* Fire red */
+  --green: #22C55E; /* Success green */
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  color: #dbe5ef;
-  background: #07101b;
-  font-synthesis: none;
-  --bg: #07101b;
-  --panel: #0c1724;
-  --panel-2: #101d2b;
-  --border: #213044;
-  --muted: #7f8fa3;
-  --text: #dce5ef;
-  --orange: #ff7547;
-  --amber: #ffb84d;
-  --cyan: #36c9f4;
-  --green: #4dd69b;
+  color: var(--text);
+  background: var(--bg);
 }
 
 @layer base {
@@ -55,8 +55,110 @@
 .app-shell {
   min-height: 100vh;
 }
-.sidebar {
-  position: fixed;
+  .sidebar {
+    background: #080F1C; /* Deep navy */
+    border-right: 1px solid var(--border);
+    transition: background 0.3s ease, width 0.2s ease;
+  }
+  .sidebar nav button,
+  .sidebar-foot > button {
+    color: #94A3B8; /* Secondary text */
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .sidebar nav button:hover,
+  .sidebar-foot > button:hover {
+    background: #0B1220; /* Dark background */
+    color: #F8FAFC; /* Primary text */
+  }
+  .sidebar nav button.active {
+    background: linear-gradient(90deg, #17243A, #111C2E);
+    color: #F8FAFC;
+    box-shadow: inset 3px 0 0 #FF8C42; /* Fire orange accent */
+  }
+  .topbar {
+    background: #080F1C; /* Deep navy */
+    border-bottom: 1px solid var(--border);
+    color: #94A3B8;
+    transition: background 0.3s ease;
+  }
+  .top-controls label {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    color: #94A3B8;
+  }
+  .top-controls select {
+    color: #F8FAFC;
+  }
+  .kpi-card {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 6px #0004;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px #0006;
+  }
+  .kpi-card > strong {
+    color: #F8FAFC;
+  }
+  .kpi-card > small {
+    color: #94A3B8;
+  }
+  .card {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    box-shadow: 0 2px 8px #0005;
+    transition: box-shadow 0.2s ease;
+  }
+  .card:hover {
+    box-shadow: 0 4px 12px #0007;
+  }
+  .button.primary {
+    background: linear-gradient(180deg, #FF8C42, #EF4444);
+    border: 1px solid #FF8C42;
+    color: #F8FAFC;
+  }
+  .button.secondary {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    color: #94A3B8;
+  }
+  .map-shell {
+    background: #0B1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .map-legend {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: #94A3B8;
+  }
+  .chart-legend button {
+    color: #94A3B8;
+  }
+  .chart-legend button.muted {
+    opacity: 0.4;
+  }
+  .chart-tooltip {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    color: #F8FAFC;
+  }
+  .summary-list > div {
+    border-bottom: 1px solid var(--border);
+  }
+  .severity {
+    border: 1px solid var(--border);
+  }
+
+  
   z-index: 1000;
   inset: 0 auto 0 0;
   width: 242px;
@@ -1785,7 +1887,112 @@ footer {
   }
 }
 @media (max-width: 900px) {
-  .sidebar {
+    .sidebar {
+    background: #080F1C; /* Deep navy */
+    border-right: 1px solid var(--border);
+    transition: background 0.3s ease, width 0.2s ease;
+  }
+  .sidebar nav button,
+  .sidebar-foot > button {
+    color: #94A3B8; /* Secondary text */
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .sidebar nav button:hover,
+  .sidebar-foot > button:hover {
+    background: #0B1220; /* Dark background */
+    color: #F8FAFC; /* Primary text */
+  }
+  .sidebar nav button.active {
+    background: linear-gradient(90deg, #17243A, #111C2E);
+    color: #F8FAFC;
+    box-shadow: inset 3px 0 0 #FF8C42; /* Fire orange accent */
+  }
+  .topbar {
+    background: #080F1C; /* Deep navy */
+    border-bottom: 1px solid var(--border);
+    color: #94A3B8;
+    transition: background 0.3s ease;
+  }
+  .top-controls label {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    color: #94A3B8;
+  }
+  .top-controls select {
+    color: #F8FAFC;
+  }
+  .kpi-card {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 6px #0004;
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px #0006;
+  }
+  .kpi-card > strong {
+    color: #F8FAFC;
+  }
+  .kpi-card > small {
+    color: #94A3B8;
+  }
+  .card {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    box-shadow: 0 2px 8px #0005;
+    transition: box-shadow 0.2s ease;
+  }
+  .card:hover {
+    box-shadow: 0 4px 12px #0007;
+  }
+  .button.primary {
+    background: linear-gradient(180deg, #FF8C42, #EF4444);
+    border: 1px solid #FF8C42;
+    color: #F8FAFC;
+  }
+  .button.secondary {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    color: #94A3B8;
+  }
+  .map-shell {
+    background: #0B1220;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .map-legend {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: #94A3B8;
+  }
+  .chart-legend button {
+    color: #94A3B8;
+  }
+  .chart-legend button.muted {
+    opacity: 0.4;
+  }
+  .chart-tooltip {
+    background: #111C2E;
+    border: 1px solid var(--border);
+    color: #F8FAFC;
+  }
+  .summary-list > div {
+    border-bottom: 1px solid var(--border);
+  }
+  .severity {
+    border: 1px solid var(--border);
+  }
+
+  background: #080F1C; /* Dark navy */
+  border-right: 1px solid var(--border);
+
     width: 242px !important;
     transform: translateX(-100%);
     box-shadow: 20px 0 50px #0008;
@@ -1803,7 +2010,7 @@ footer {
     color: #8092a5;
   }
   .mobile-overlay {
-    position: fixed;
+    
     z-index: 900;
     inset: 0;
     border: 0;
