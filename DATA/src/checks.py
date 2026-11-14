@@ -101,8 +101,10 @@ def run_checks_for_region(region_id: str) -> tuple[bool, str]:
     # -------------------------------------------------------------------------
     # Check 2: Coordinates within Bounding Box
     # -------------------------------------------------------------------------
-    lon_cond = (df["longitude"] >= west) & (df["longitude"] <= east)
-    lat_cond = (df["latitude"] >= south) & (df["latitude"] <= north)
+    # Floating-point coordinate tolerance for pixel edge rounding (1e-4 deg ~ 10m)
+    EPSILON = 1e-4
+    lon_cond = (df["longitude"] >= west - EPSILON) & (df["longitude"] <= east + EPSILON)
+    lat_cond = (df["latitude"] >= south - EPSILON) & (df["latitude"] <= north + EPSILON)
     inside_mask = lon_cond & lat_cond
     outside_count = int((~inside_mask).sum())
     c2_pass = (outside_count == 0)
@@ -113,7 +115,8 @@ def run_checks_for_region(region_id: str) -> tuple[bool, str]:
         df_outside = df[~inside_mask].copy()
         outside_file = DATA_CLEAN_DIR / f"outside_bbox_{region_id}.parquet"
         df_outside.to_parquet(outside_file, index=False)
-        outside_samples = df_outside[["latitude", "longitude", "acq_date", "sensor"]].head(5).to_dict(orient="records")
+        date_col = "date" if "date" in df_outside.columns else ("acq_date" if "acq_date" in df_outside.columns else "datetime_utc")
+        outside_samples = df_outside[["latitude", "longitude", date_col, "sensor"]].head(5).to_dict(orient="records")
 
     checks.append({
         "name": "2. Bounding Box Coordinates",

@@ -43,6 +43,6 @@
 - [x] 1.6 Sanity checks for `palisades_la` (`src/checks.py` -> `reports/sanity_palisades_la.md`) - ALL 7 CHECKS PASSED
 - [ ] 1.5 Repeat pipeline for remaining regions (`western_ghats_karnataka`, `punjab_haryana`, `nsw_victoria_au`)
   - [x] Implement master orchestration script `run_all.py`
-  - [ ] Complete download, ingest, sanity checks, and plots for `western_ghats_karnataka`
-  - [ ] Complete download, ingest, sanity checks, and plots for `punjab_haryana`
+  - [x] Complete download, ingest, sanity checks, and plots for `western_ghats_karnataka` (133,605 clean rows; all 7 checks passed)
+  - [x] Complete download, ingest, sanity checks, and plots for `punjab_haryana` (2,732,329 clean rows; all 7 checks passed)
   - [ ] Complete download, ingest, sanity checks, and plots for `nsw_victoria_au`

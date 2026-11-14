@@ -33,7 +33,7 @@ AVAILABILITY_URL = "https://firms.modaps.eosdis.nasa.gov/api/data_availability/c
 STATUS_URL = "https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status"
 
 MAX_DAY_RANGE = 5
-DEFAULT_PAUSE_SECONDS = 0.10
+DEFAULT_PAUSE_SECONDS = 0.125
 MAX_RETRIES = 3
 BACKOFF_FACTOR = 2.0
 DEFAULT_MAX_WORKERS = 4
@@ -96,12 +96,12 @@ SENSOR_CONFIGS = {
     "VIIRS": {
         "streams": [
             {
-                "stream_id": "VIIRS_SNPP",
-                "sp_source": "VIIRS_SNPP_SP",
-                "nrt_source": "VIIRS_SNPP_NRT",
-                "start_date": "2012-01-20",
-                "end_date": "2026-11-02",  # FIRMS archive cutoff
-                "satellites": ["N"]
+                "stream_id": "VIIRS_NOAA21",
+                "sp_source": "VIIRS_NOAA21_SP",
+                "nrt_source": "VIIRS_NOAA21_NRT",
+                "start_date": "2023-03-01",
+                "end_date": None,  # today
+                "satellites": ["N21"]
             },
             {
                 "stream_id": "VIIRS_NOAA20",
@@ -112,12 +112,12 @@ SENSOR_CONFIGS = {
                 "satellites": ["N20"]
             },
             {
-                "stream_id": "VIIRS_NOAA21",
-                "sp_source": "VIIRS_NOAA21_SP",
-                "nrt_source": "VIIRS_NOAA21_NRT",
-                "start_date": "2023-03-01",
-                "end_date": None,  # today
-                "satellites": ["N21"]
+                "stream_id": "VIIRS_SNPP",
+                "sp_source": "VIIRS_SNPP_SP",
+                "nrt_source": "VIIRS_SNPP_NRT",
+                "start_date": "2012-01-20",
+                "end_date": "2026-11-02",  # FIRMS archive cutoff
+                "satellites": ["N"]
             }
         ],
         "default_columns": [
@@ -422,41 +422,43 @@ def download_sensor(
 
     print(f"\n>>> Starting download for Region: {region_id} | Sensor: {sensor_id} (Years {min_year}-{max_year})")
 
-    year = min_year
-    while year <= max_year:
-        year_file = raw_sensor_dir / f"{year}.csv"
+    for stream in sensor_cfg["streams"]:
+        s_start = datetime.strptime(stream["start_date"], "%Y-%m-%d").date()
+        s_end = datetime.strptime(stream["end_date"], "%Y-%m-%d").date() if stream["end_date"] else date.today()
+        stream_min_year = s_start.year
+        stream_max_year = s_end.year
+        print(f"\n--- Stream: {stream['stream_id']} (Years {stream_min_year}-{stream_max_year}) ---")
 
-        # Collect all windows for this year across streams
-        all_year_windows = []
-        for stream in sensor_cfg["streams"]:
-            s_start = datetime.strptime(stream["start_date"], "%Y-%m-%d").date()
-            s_end = datetime.strptime(stream["end_date"], "%Y-%m-%d").date() if stream["end_date"] else date.today()
+        year = stream_min_year
+        while year <= stream_max_year:
+            year_file = raw_sensor_dir / f"{year}.csv"
+
+            # Collect all windows for this stream-year
+            stream_year_windows = []
             for d_str, day_span in generate_windows(region_id, sensor_id, year, s_start, s_end):
-                all_year_windows.append(f"{stream['stream_id']}_{d_str}_{day_span}")
+                stream_year_windows.append(f"{stream['stream_id']}_{d_str}_{day_span}")
 
-        completed_set = set(manifest.get("completed_windows", []))
-        if all_year_windows and all(w in completed_set for w in all_year_windows) and year_file.exists():
-            year += 1
-            continue
+            completed_set = set(manifest.get("completed_windows", []))
+            if stream_year_windows and all(w in completed_set for w in stream_year_windows):
+                year += 1
+                continue
 
-        # Rate-limiting safety check before starting year
-        if wait_on_limit:
-            stat = check_transaction_status(map_key, session)
-            curr_tx = stat.get("current_transactions", 0)
-            if curr_tx >= SAFE_TX_CEILING:
-                print(f"[RATE-LIMIT] Current usage {curr_tx:,} approaching limit. Cooling down...")
-                wait_for_transaction_capacity(map_key, session, target_below=TX_RESUME_TARGET)
+            # Rate-limiting safety check before starting year
+            if wait_on_limit:
+                stat = check_transaction_status(map_key, session)
+                curr_tx = stat.get("current_transactions", 0)
+                if curr_tx >= SAFE_TX_CEILING:
+                    print(f"[RATE-LIMIT] Current usage {curr_tx:,} approaching limit. Cooling down...")
+                    wait_for_transaction_capacity(map_key, session, target_below=TX_RESUME_TARGET)
 
-        year_records = []
-        if year_file.exists():
-            try:
-                df_existing = pd.read_csv(year_file)
-                year_records = df_existing.to_dict(orient="records")
-            except Exception:
-                year_records = []
+            year_records = []
+            if year_file.exists():
+                try:
+                    df_existing = pd.read_csv(year_file)
+                    year_records = df_existing.to_dict(orient="records")
+                except Exception:
+                    year_records = []
 
-        year_limit_hit = False
-        for stream in sensor_cfg["streams"]:
             new_records, limit_hit = download_stream_year(
                 map_key=map_key,
                 region_id=region_id,
@@ -471,43 +473,38 @@ def download_sensor(
                 max_workers=max_workers
             )
             year_records.extend(new_records)
-            if limit_hit:
-                year_limit_hit = True
-                break
 
-        # Save/update year CSV
-        if year_records:
-            df_year = pd.DataFrame(year_records)
-            for col in default_cols:
-                if col not in df_year.columns:
-                    df_year[col] = None
-            cols = [c for c in default_cols if c in df_year.columns] + [c for c in df_year.columns if c not in default_cols]
-            df_year = df_year[cols]
-            # Deduplicate by key coordinates and acq datetime
-            dedup_cols = [c for c in ["latitude", "longitude", "acq_date", "acq_time", "satellite"] if c in df_year.columns]
-            if dedup_cols:
-                df_year = df_year.drop_duplicates(subset=dedup_cols)
-            df_year.to_csv(year_file, index=False)
-        else:
-            df_empty = pd.DataFrame(columns=default_cols)
-            df_empty.to_csv(year_file, index=False)
-
-        if year_limit_hit:
-            if wait_on_limit:
-                print(f"[PAUSED] Progress saved cleanly for {year}. Waiting for limit reset...")
-                wait_for_transaction_capacity(map_key, session, target_below=TX_RESUME_TARGET)
-                continue
+            # Save/update year CSV
+            if year_records:
+                df_year = pd.DataFrame(year_records)
+                for col in default_cols:
+                    if col not in df_year.columns:
+                        df_year[col] = None
+                cols = [c for c in default_cols if c in df_year.columns] + [c for c in df_year.columns if c not in default_cols]
+                df_year = df_year[cols]
+                # Deduplicate by key coordinates and acq datetime
+                dedup_cols = [c for c in ["latitude", "longitude", "acq_date", "acq_time", "satellite"] if c in df_year.columns]
+                if dedup_cols:
+                    df_year = df_year.drop_duplicates(subset=dedup_cols)
+                df_year.to_csv(year_file, index=False)
             else:
-                print(f"[PAUSED] Progress saved cleanly for {year}. Rerun later to resume.")
-                return False
+                if not year_file.exists():
+                    df_empty = pd.DataFrame(columns=default_cols)
+                    df_empty.to_csv(year_file, index=False)
 
-        completed_set = set(manifest.get("completed_windows", []))
-        if all_year_windows and all(w in completed_set for w in all_year_windows):
-            if year not in manifest["completed_years"]:
-                manifest["completed_years"].append(year)
-            save_manifest(manifest_path, manifest)
-        print(f"  [DONE] Year {year}: {len(year_records)} detections saved -> {year_file.name}")
-        year += 1
+            if limit_hit:
+                if wait_on_limit:
+                    print(f"[PAUSED] Progress saved cleanly for {stream['stream_id']} ({year}). Waiting for limit reset...")
+                    wait_for_transaction_capacity(map_key, session, target_below=TX_RESUME_TARGET)
+                    continue
+                else:
+                    print(f"[PAUSED] Progress saved cleanly for {stream['stream_id']} ({year}). Rerun later to resume.")
+                    return False
+
+            completed_set = set(manifest.get("completed_windows", []))
+            if stream_year_windows and all(w in completed_set for w in stream_year_windows):
+                print(f"  [DONE] Stream {stream['stream_id']} Year {year}: {len(new_records)} detections added -> {year_file.name}")
+                year += 1
 
     return True
 
