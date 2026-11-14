@@ -1,7 +1,7 @@
 import pandas as pd
 df = pd.read_parquet("data/clean/palisades_la_combined.parquet")
 
-print(df.shape, "\n", list(df.columns))          # expect 22 columns
+print(df.shape, "\n", list(df.columns))          # expect 23 columns
 print(df.dtypes)
 print(df.isna().sum())                           # date, lat, lon, frp, confidence must be 0
 print("dupes:", df.duplicated().sum())           # expect 0
