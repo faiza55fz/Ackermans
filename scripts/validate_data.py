@@ -122,8 +122,9 @@ def validate_timestamp(
 
 def validate_datetime_utc(value: Any) -> Tuple[bool, Optional[str], Optional[str]]:
     """
-    Validates an ISO-8601 timestamp with an explicit timezone.
-    Normalizes the timestamp to UTC without modifying the raw input.
+    Validates an ISO-8601 timestamp with explicit or implied UTC timezone.
+    Normalizes the timestamp to standardized ISO-8601 UTC format (YYYY-MM-DDTHH:MM:SSZ)
+    without modifying the raw input.
     """
     if value is None or str(value).strip() == "":
         return False, None, "Missing datetime_utc"
@@ -131,13 +132,15 @@ def validate_datetime_utc(value: Any) -> Tuple[bool, Optional[str], Optional[str
     raw_value = str(value).strip()
 
     try:
-        parsed = datetime.fromisoformat(raw_value.replace("Z", "+00:00"))
+        val_clean = raw_value.replace("Z", "+00:00").replace("UTC", "+00:00").strip()
+        parsed = datetime.fromisoformat(val_clean)
 
         if parsed.tzinfo is None or parsed.utcoffset() is None:
-            return False, None, "datetime_utc must include an explicit timezone"
+            # When timezone offset is omitted in a datetime_utc column, assume UTC
+            parsed = parsed.replace(tzinfo=timezone.utc)
 
         utc_timestamp = parsed.astimezone(timezone.utc)
-        normalized = utc_timestamp.isoformat().replace("+00:00", "Z")
+        normalized = utc_timestamp.strftime("%Y-%m-%dT%H:%M:%SZ")
 
         return True, normalized, None
 

@@ -1,0 +1,23 @@
+{
+  "file_name": "palisades_la_MODIS.csv",
+  "input_file": "data\\data\\clean\\csv\\palisades_la_MODIS.csv",
+  "dataset_family": "MODIS",
+  "family_counts": {
+    "MODIS": 423
+  },
+  "total_input_records": 423,
+  "valid_accepted_records": 423,
+  "quarantined_records": 0,
+  "reconciliation_passed": true,
+  "spatial_bounds": {
+    "has_spatial_data": true,
+    "record_count_with_coords": 423,
+    "min_lat": 34.0287,
+    "max_lat": 34.1998,
+    "min_lng": -118.7498,
+    "max_lng": -118.435,
+    "center_lat": 34.11425,
+    "center_lng": -118.5924,
+    "center_definition": "bounding_box_midpoint"
+  }
+}

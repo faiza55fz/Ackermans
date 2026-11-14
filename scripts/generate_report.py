@@ -149,8 +149,8 @@ def verify_scientific_checklist(
             try:
                 raw_s = float(str(r["scan"]).strip())
                 raw_t = float(str(r["track"]).strip())
-                parsed_s = r.get("derived_scan_km")
-                parsed_t = r.get("derived_track_km")
+                parsed_s = r.get("derived_scan_km") if r.get("derived_scan_km") is not None else r.get("derived_scan")
+                parsed_t = r.get("derived_track_km") if r.get("derived_track_km") is not None else r.get("derived_track")
                 if parsed_s is None or parsed_t is None or raw_s != parsed_s or raw_t != parsed_t:
                     mismatch_cnt += 1
             except (ValueError, TypeError):
@@ -374,6 +374,8 @@ def generate_quality_report(
         dk = next((k for k in r if k.lower() in ("acq_date", "date")), None)
         if dk and r[dk]:
             dates.append(str(r[dk]).strip())
+        elif r.get("derived_timestamp_utc"):
+            dates.append(str(r["derived_timestamp_utc"])[:10])
     min_date, max_date = (min(dates), max(dates)) if dates else (None, None)
 
     # Sensor breakdown

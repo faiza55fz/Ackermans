@@ -257,6 +257,7 @@ def ingest_firms_csv(
     input_file: Path,
     processed_dir: Path,
     quarantine_dir: Path,
+    overwrite: bool = False,
 ) -> Dict[str, Any]:
     """
     Ingest a NASA FIRMS CSV while preserving original source fields.
@@ -280,12 +281,15 @@ def ingest_firms_csv(
     out_quarantine_file = (
         quarantine_dir / f"{input_file.stem}_quarantined.json"
     )
+    out_manifest_file = (
+        processed_dir / f"{input_file.stem}_manifest.json"
+    )
 
-    # Never silently overwrite an earlier ingestion result.
-    if out_valid_file.exists() or out_quarantine_file.exists():
+    # Never silently overwrite an earlier ingestion result unless overwrite=True.
+    if not overwrite and (out_valid_file.exists() or out_quarantine_file.exists()):
         raise FileExistsError(
             "Output already exists. Move or rename the previous output "
-            "files before running this input again."
+            "files before running this input again, or specify --overwrite."
         )
 
     records_processed = 0
@@ -360,7 +364,20 @@ def ingest_firms_csv(
 
             output_record["derived_scan"] = validation.parsed_scan
             output_record["derived_track"] = validation.parsed_track
+            output_record["derived_scan_km"] = validation.parsed_scan
+            output_record["derived_track_km"] = validation.parsed_track
             output_record["derived_frp"] = validation.parsed_frp
+
+            # Deterministic unique record ID from primary physical observation keys
+            id_components = (
+                f"{validation.parsed_lat}_{validation.parsed_lng}_"
+                f"{validation.parsed_iso_timestamp}_{canonical_name}_"
+                f"{validation.parsed_scan}_{validation.parsed_track}_"
+                f"{output_record.get('frp')}"
+            )
+            output_record["derived_record_id"] = hashlib.sha256(
+                id_components.encode("utf-8")
+            ).hexdigest()[:16]
 
             # No unsupported scientific conclusions.
             output_record["derived_cross_sat_overlap"] = None
@@ -446,6 +463,21 @@ def ingest_firms_csv(
             allow_nan=False,
         )
 
+    # 12. Write companion ingest manifest for verifiable audit reconciliation.
+    manifest_data = {
+        "file_name": input_file.name,
+        "input_file": str(input_file),
+        "dataset_family": dataset_family,
+        "family_counts": family_counts,
+        "total_input_records": records_processed,
+        "valid_accepted_records": len(valid_records),
+        "quarantined_records": len(quarantined_records),
+        "reconciliation_passed": True,
+        "spatial_bounds": spatial_bounds,
+    }
+    with out_manifest_file.open("w", encoding="utf-8") as output_file:
+        json.dump(manifest_data, output_file, indent=2)
+
     return {
         "file_name": input_file.name,
         "family": dataset_family,
@@ -456,6 +488,7 @@ def ingest_firms_csv(
         "reconciliation_passed": True,
         "processed_output": str(out_valid_file),
         "quarantine_output": str(out_quarantine_file),
+        "manifest_output": str(out_manifest_file),
         "spatial_bounds": spatial_bounds,
     }
 
@@ -480,6 +513,11 @@ def main() -> None:
         default="data/quarantine",
         help="Directory for quarantined records",
     )
+    parser.add_argument(
+        "--overwrite",
+        action="store_true",
+        help="Overwrite existing output files if they already exist",
+    )
 
     args = parser.parse_args()
 
@@ -493,6 +531,7 @@ def main() -> None:
         input_path,
         processed_path,
         quarantine_path,
+        overwrite=args.overwrite,
     )
 
     print("\nIngestion complete.")
