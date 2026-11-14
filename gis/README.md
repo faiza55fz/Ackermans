@@ -91,11 +91,41 @@ This directory contains geospatial analysis and spatial aggregation tools for NA
 
 ---
 
+### 8. `gis/generate_region_comparison.py`
+* Computes and writes `gis/output/region_comparison.csv` summarizing comparative statistics across regions (`palisades`, `western_ghats_karnataka`, `punjab_haryana`) at both `0.05°` and `0.01°` grid resolutions.
+* Tracks dataset rows, spatial cell counts per sensor (2012–2026), spatial cell overlap, and same-day agreement metrics (`modis_cell_days`, `viirs_also`, `viirs_only`, `modis_only`, and `share_modis_seen_by_viirs`).
+
+---
+
+## Cross-Region Sensor Comparison & Grid Resolution Effects
+
+Spatial agreement between MODIS and VIIRS is strongly modulated by grid cell resolution:
+
+| Region | Cell Size | Rows | MODIS Cells (2012–26) | VIIRS Cells (2012–26) | Both Cells | MODIS Cell-Days | VIIRS Also | VIIRS Only | MODIS Only | % MODIS Seen by VIIRS |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Palisades** | 0.05° | 6,083 | 23 | 27 | 22 | 66 | 55 | 262 | 11 | **83.33%** |
+| **Palisades** | 0.01° | 6,083 | 228 | 361 | 210 | 332 | 260 | 579 | 72 | **78.31%** |
+| **Western Ghats** | 0.05° | 133,605 | 1,171 | 1,732 | 1,168 | 8,783 | 4,352 | 59,601 | 4,431 | **49.55%** |
+| **Western Ghats** | 0.01° | 133,605 | 7,000 | 22,975 | 6,376 | 11,044 | 3,240 | 77,925 | 7,804 | **29.34%** |
+| **Punjab & Haryana** | 0.05° | 2,732,329 | 5,708 | 6,810 | 5,656 | 202,761 | 133,329 | 783,639 | 69,432 | **65.76%** |
+| **Punjab & Haryana** | 0.01° | 2,732,329 | 73,350 | 120,664 | 71,539 | 285,634 | 64,748 | 1,641,821 | 220,886 | **22.67%** |
+
+* **Impact of Cell Size on Percentages:**
+  * When cell size decreases from `0.05°` (~5.5 km) to `0.01°` (~1.1 km), each spatial bucket becomes 25 times smaller. Detections from MODIS and VIIRS that occurred on the same day in the same general neighborhood but separated by $>1.1$ km fall into adjacent but distinct cells rather than the same cell-day.
+  * Consequently, the proportion of same-day MODIS cell-days matched by VIIRS decreases in all regions (Palisades: 83.3% $\rightarrow$ 78.3%; Western Ghats: 49.6% $\rightarrow$ 29.3%; Punjab & Haryana: 65.8% $\rightarrow$ 22.7%).
+
+---
+
 ## Running the Pipeline
 
 ### 1. Run Unit Tests
 ```powershell
 python gis/test_grid.py
+```
+
+### 2. Generate Cross-Region Comparison Table
+```powershell
+python gis/generate_region_comparison.py
 ```
 
 ### 2. Punjab & Haryana (Multi-Million Record Large Region)
