@@ -6,19 +6,19 @@ import geopandas as gpd
 from shapely.geometry import box, shape, Polygon, MultiPolygon
 from shapely.ops import unary_union
 
-# Default AOI bounding box matching the Palisades study area
+# Default AOI bounding box matching the Palisades study area (widened to -118.42 E)
 DEFAULT_AOI_BBOX = {
     "min_lat": 34.0,
     "max_lat": 34.2,
     "min_lon": -118.75,
-    "max_lon": -118.43,
+    "max_lon": -118.42,
 }
 
 
 def get_default_aoi() -> Polygon:
     """
     Get the default Area of Interest (AOI) polygon representing
-    the bounding box (lat 34.0 to 34.2, lon -118.75 to -118.43).
+    the bounding box (lat 34.0 to 34.2, lon -118.75 to -118.42).
     """
     return box(
         DEFAULT_AOI_BBOX["min_lon"],
@@ -73,7 +73,7 @@ def clip_to_aoi(
         DataFrame with 'longitude' and 'latitude' columns.
     polygon_geojson : GeoJSON dict, file path, Shapely geometry, or None
         The clipping boundary polygon. If None, the default bounding box
-        (lat 34.0 to 34.2, lon -118.75 to -118.43) is used.
+        (lat 34.0 to 34.2, lon -118.75 to -118.42) is used.
 
     Returns:
     --------

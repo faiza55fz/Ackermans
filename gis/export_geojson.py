@@ -32,6 +32,7 @@ def export_cells_to_geojson(
     - count
     - days
     - frp_sum
+    - frp_missing_count (if present)
 
     Parameters:
     -----------
@@ -57,19 +58,22 @@ def export_cells_to_geojson(
         df["cell_x"] = coords[0].astype(int)
         df["cell_y"] = coords[1].astype(int)
 
-    # Construct square polygons
+    # Construct square polygons rounded to 6 decimal places
     geometries = [
         box(
-            cx * cell_size,
-            cy * cell_size,
-            (cx + 1) * cell_size,
-            (cy + 1) * cell_size
+            round(cx * cell_size, 6),
+            round(cy * cell_size, 6),
+            round((cx + 1) * cell_size, 6),
+            round((cy + 1) * cell_size, 6)
         )
         for cx, cy in zip(df["cell_x"], df["cell_y"])
     ]
 
     # Select required properties
     required_props = ["cell_id", "period", "sensor", "count", "days", "frp_sum"]
+    if "frp_missing_count" in df.columns:
+        required_props.append("frp_missing_count")
+
     export_df = df[required_props].copy()
 
     gdf = gpd.GeoDataFrame(export_df, geometry=geometries, crs="EPSG:4326")
@@ -98,7 +102,7 @@ def run_pipeline(
     df = pd.read_csv(p_csv)
     print(f"   Loaded {len(df):,} total records.")
 
-    print("2. Clipping to default AOI bounding box (lat 34.0 to 34.2, lon -118.75 to -118.43)...")
+    print("2. Clipping to default AOI bounding box (lat 34.0 to 34.2, lon -118.75 to -118.42)...")
     clipped_gdf = clip_to_aoi(df)
     print(f"   Retained {len(clipped_gdf):,} records within AOI.")
 

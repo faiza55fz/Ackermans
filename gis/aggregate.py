@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from typing import Optional
 
@@ -17,7 +18,8 @@ def aggregate_by_cell(
     Computes:
     - Hotspot count (total detections)
     - Unique detection-days (counting each cell at most once per day per sensor)
-    - FRP sum (sum of Fire Radiative Power)
+    - FRP sum (sum of Fire Radiative Power, skipping NaNs; NaN if all missing)
+    - FRP missing count (number of observations with NaN/missing FRP)
 
     Parameters:
     -----------
@@ -32,7 +34,7 @@ def aggregate_by_cell(
     --------
     pd.DataFrame:
         Aggregated results with columns:
-        ['cell_id', 'cell_x', 'cell_y', 'period', 'sensor', 'count', 'days', 'frp_sum']
+        ['cell_id', 'cell_x', 'cell_y', 'period', 'sensor', 'count', 'days', 'frp_sum', 'frp_missing_count']
     """
     work_df = df.copy()
 
@@ -47,11 +49,11 @@ def aggregate_by_cell(
     else:
         work_df["period"] = "all"
 
-    # Ensure FRP is numeric
+    # Ensure FRP is numeric while PRESERVING NaN values
     if "frp" in work_df.columns:
-        work_df["frp"] = pd.to_numeric(work_df["frp"], errors="coerce").fillna(0.0)
+        work_df["frp"] = pd.to_numeric(work_df["frp"], errors="coerce")
     else:
-        work_df["frp"] = 0.0
+        work_df["frp"] = np.nan
 
     # Ensure date string for unique day counting
     work_df["date_str"] = dates.dt.strftime("%Y-%m-%d")
@@ -63,11 +65,12 @@ def aggregate_by_cell(
         .agg(
             count=("date_str", "count"),
             days=("date_str", "nunique"),
-            frp_sum=("frp", "sum"),
+            frp_sum=("frp", lambda s: s.sum(min_count=1)),
+            frp_missing_count=("frp", lambda s: s.isna().sum()),
         )
     )
 
-    # Round frp_sum for clean output
+    # Round frp_sum for clean output where not NaN
     agg_df["frp_sum"] = agg_df["frp_sum"].round(2)
 
     # Sort for deterministic output

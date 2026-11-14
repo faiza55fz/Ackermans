@@ -66,8 +66,8 @@ def compare_sensors_by_day(
 
     # Outer join to capture all cell-days across both sensors
     merged = pd.merge(modis_pairs, viirs_pairs, on=["cell_id", "date"], how="outer")
-    merged["modis_detected"] = merged["modis_detected"].replace({np.nan: False}).astype(bool)
-    merged["viirs_detected"] = merged["viirs_detected"].replace({np.nan: False}).astype(bool)
+    merged["modis_detected"] = merged["modis_detected"].eq(True)
+    merged["viirs_detected"] = merged["viirs_detected"].eq(True)
 
     # Determine agreement category
     conditions = [
@@ -165,8 +165,8 @@ def compute_sensor_agreement(
 
     # Merge by cell_id, date, year, daynight
     merged = pd.merge(modis, viirs, on=["cell_id", "date", "year", "daynight"], how="outer")
-    merged["modis"] = merged["modis"].replace({np.nan: False}).astype(bool)
-    merged["viirs"] = merged["viirs"].replace({np.nan: False}).astype(bool)
+    merged["modis"] = merged["modis"].eq(True)
+    merged["viirs"] = merged["viirs"].eq(True)
 
     merged["modis_only"] = (merged["modis"] & ~merged["viirs"]).astype(int)
     merged["viirs_only"] = (~merged["modis"] & merged["viirs"]).astype(int)

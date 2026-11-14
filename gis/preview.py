@@ -36,15 +36,15 @@ def plot_preview(
         legend_kwds={"label": "Total Hotspot Count per Cell", "orientation": "vertical"}
     )
 
-    # Reference AOI bounding box
-    aoi_polygon = box(-118.75, 34.0, -118.43, 34.2)
+    # Reference AOI bounding box (widened to -118.42 E)
+    aoi_polygon = box(-118.75, 34.0, -118.42, 34.2)
     aoi_series = gpd.GeoSeries([aoi_polygon], crs="EPSG:4326")
     aoi_series.boundary.plot(
         ax=ax,
         color="royalblue",
         linestyle="--",
         linewidth=1.8,
-        label="Default AOI (34.0-34.2 N, 118.75-118.43 W)"
+        label="Default AOI (34.0-34.2 N, 118.75-118.42 W)"
     )
 
     ax.set_title("Palisades Active Fire Detections\nTotal Hotspot Count per 0.01° Grid Cell", fontsize=14, pad=12)
