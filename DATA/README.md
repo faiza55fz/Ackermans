@@ -108,7 +108,7 @@ python run_all.py
 
 ## How to test the pipeline on the current data
 
-To test the pipeline directly using the included cleaned test data for `palisades_la` (no API key or `download.py` required):
+To test the pipeline directly using the included cleaned full-year data for `palisades_la` (no API key or `download.py` required):
 
 1. **Set up the Python Virtual Environment:**
    ```bash
@@ -128,11 +128,12 @@ To test the pipeline directly using the included cleaned test data for `palisade
    ```
 
 3. **Run Verification & Checks (WITHOUT running `download.py`):**
-   - **Comprehensive Data Verification:**
+   - **Data Verification:**
      ```bash
      python verify.py
      ```
      Verifies schema (23 columns), 0 duplicates, coordinate boundaries, date bounds, satellite counts, and the January 2025 Palisades wildfire spike.
+     *(Note: `python verify_full.py` is NOT needed for pipeline testing as it requires the uncommitted `data/raw/` downloads).*
 
    - **Sanity Verification Suite:**
      ```bash
@@ -144,5 +145,5 @@ To test the pipeline directly using the included cleaned test data for `palisade
      ```bash
      python src/plot.py --region palisades_la
      ```
-     Generates the 200 dpi presentation chart at `reports/slide2_hotspots_per_year_by_sensor_palisades_la.png` with sensor transition annotations.
+     Generates the 200 dpi presentation chart at `reports/slide2_hotspots_per_year_by_sensor_palisades_la.png` showing the 2012 VIIRS jump and the January 2025 Pacific Palisades wildfire spike.
 

@@ -40,7 +40,7 @@ DEFAULT_MAX_WORKERS = 4
 
 # Transaction planning estimates: ~8 transactions per 5-day request
 TX_PER_REQUEST_ESTIMATE = 8
-SAFE_TX_CEILING = 4500
+SAFE_TX_CEILING = 4900
 TX_RESUME_TARGET = 1000
 
 # Bounding boxes as (west, south, east, north) in lon/lat

@@ -21,8 +21,8 @@
   - [x] CLI argument parsing for region and sensor, including `--all`
   - [x] Summary table output (region, sensor, files, rows, min date, max date)
 - [x] 0.3 Run test region (`palisades_la`) across all sensors over full date ranges
-  - MODIS: 27 files, 438 rows (2005-09-29 to 2025-01-11)
-  - VIIRS: 15 files, 4,303 rows (2013-01-31 to 2026-02-28)
+  - MODIS: 27 files, 595 raw rows -> 577 clean rows (2005-09-29 to 2026-09-09)
+  - VIIRS: 15 files, 5,744 raw rows -> 5,506 clean rows (2012-05-10 to 2026-11-09)
 
 ## Phase 1: Get and Clean Data
 - [x] 1.1 Inspect raw files for `palisades_la` (file sizes, row counts)

@@ -212,8 +212,10 @@ def ingest_sensor(region: str, sensor: str) -> tuple[pd.DataFrame, pd.DataFrame,
         if col not in df_kept.columns:
             df_kept[col] = None
 
-    # Cast confidence to string for consistent serialization
+    # Cast confidence and version to string for consistent serialization
     df_kept["confidence"] = df_kept["confidence"].astype(str)
+    if "version" in df_kept.columns:
+        df_kept["version"] = df_kept["version"].fillna("").astype(str)
 
     df_final = df_kept[OUTPUT_COLUMNS].copy()
     final_count = len(df_final)
@@ -288,8 +290,10 @@ def ingest_region(region: str) -> pd.DataFrame:
     else:
         df_combined = pd.DataFrame(columns=OUTPUT_COLUMNS)
 
-    # Store confidence as string in combined file
+    # Store confidence and version as string in combined file
     df_combined["confidence"] = df_combined["confidence"].astype(str)
+    if "version" in df_combined.columns:
+        df_combined["version"] = df_combined["version"].fillna("").astype(str)
 
     # Save combined Parquet
     combined_parquet = DATA_CLEAN_DIR / f"{region}_combined.parquet"
