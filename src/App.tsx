@@ -357,9 +357,11 @@ function DashboardApp() {
           dashboard={dashboard}
           mapData={map}
           harmonizedSummary={harmonizedSummary}
+          yearlyTrends={yearlyTrends}
           setPage={handlePageChange}
           loading={loading}
           isStatic={isStatic}
+          onReload={reload}
         />
       </ErrorBoundary>
     );

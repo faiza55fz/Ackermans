@@ -4,7 +4,7 @@ import { Card, LoadingSkeleton, Status, DataUnavailable } from "./UI";
 import { FireMap } from "./FireMap";
 import { useFilters } from "../context/FiltersContext";
 import type { MapResponse, RegionKey } from "../services/apiClient";
-import { hotspots, type Hotspot, type MapCell } from "../data";
+import type { MapCell } from "../data";
 
 interface WildfireMapModuleProps {
   mapData?: MapResponse | null;
@@ -15,7 +15,6 @@ interface WildfireMapModuleProps {
 export function WildfireMapModule({ mapData, loading, onReload }: WildfireMapModuleProps) {
   const { filters, setSatellite, setConfidence, resetFilters, currentRegionMeta, confidenceNote } = useFilters();
   const [selectedCell, setSelectedCell] = useState<MapCell | null>(null);
-  const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
 
   const regionKey: RegionKey = useMemo(() => {
@@ -38,20 +37,32 @@ export function WildfireMapModule({ mapData, loading, onReload }: WildfireMapMod
 
   const filteredCells = useMemo(() => {
     return rawCells.filter((cell) => {
-      if (filters.satellite === "MODIS" && cell.modis_detections === 0) return false;
-      if (filters.satellite === "VIIRS" && cell.viirs_detections === 0) return false;
-      return true;
-    });
-  }, [rawCells, filters.satellite]);
+      // Sensor/Satellite family filtering
+      const isModisFilter =
+        filters.satellite === "MODIS" ||
+        filters.satellite === "Terra" ||
+        filters.satellite === "Aqua";
+      const isViirsFilter =
+        filters.satellite === "VIIRS" ||
+        filters.satellite === "N" ||
+        filters.satellite === "N20" ||
+        filters.satellite === "N21";
 
-  const filteredHotspots = useMemo(() => {
-    return hotspots.filter((h) => {
-      if (filters.satellite === "MODIS" && h.family !== "MODIS") return false;
-      if (filters.satellite === "VIIRS" && h.family !== "VIIRS") return false;
-      if (filters.confidence === "high" && h.confidence < 80) return false;
+      if (isModisFilter && cell.modis_detections === 0) return false;
+      if (isViirsFilter && cell.viirs_detections === 0) return false;
+
+      // Observation window filtering
+      if (filters.dateRange === "2000-2011" && cell.first_date > "2011-12-31") return false;
+      if (
+        filters.dateRange === "2012-2024" &&
+        (cell.last_date < "2012-01-01" || cell.first_date > "2024-12-31")
+      )
+        return false;
+      if (filters.dateRange === "2024-2026" && cell.last_date < "2024-01-01") return false;
+
       return true;
     });
-  }, [filters.satellite, filters.confidence]);
+  }, [rawCells, filters.satellite, filters.dateRange]);
 
   const totalDetectionsInView = useMemo(() => {
     return filteredCells.reduce((sum, c) => sum + c.detections, 0);
@@ -164,7 +175,7 @@ export function WildfireMapModule({ mapData, loading, onReload }: WildfireMapMod
                   </button>
                 </div>
               </div>
-            ) : filteredCells.length === 0 && filteredHotspots.length === 0 ? (
+            ) : filteredCells.length === 0 ? (
               <div className="p-16 text-center bg-[#141d28] border-b border-[#233142] space-y-4">
                 <AlertTriangle className="mx-auto text-[#ffb84d]" size={40} />
                 <h3 className="text-white font-semibold text-base">No Detections Match Current Filters</h3>
@@ -181,14 +192,11 @@ export function WildfireMapModule({ mapData, loading, onReload }: WildfireMapMod
             ) : (
               <FireMap
                 cells={filteredCells}
-                hotspots={filteredHotspots}
                 height={520}
                 center={currentRegionMeta.coordinates}
                 zoomLevel={currentRegionMeta.defaultZoom}
                 onSelectCell={setSelectedCell}
                 selectedCell={selectedCell}
-                onSelect={setSelectedHotspot}
-                selected={selectedHotspot}
               />
             )}
 

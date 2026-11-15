@@ -35,11 +35,37 @@ export function ViirsModule({ dashboard, yearlyTrends = [], regionComparison = [
   }, [filters.region]);
 
   const viirsTrend = useMemo(() => {
+    let minYear = 2000;
+    let maxYear = 2026;
+    if (filters.dateRange === "2000-2011") {
+      minYear = 2000;
+      maxYear = 2011;
+    } else if (filters.dateRange === "2012-2024") {
+      minYear = 2012;
+      maxYear = 2024;
+    } else if (filters.dateRange === "2024-2026") {
+      minYear = 2024;
+      maxYear = 2026;
+    }
+
     const rows = yearlyTrends.filter(
-      (r) => r.sensor === "VIIRS" && (filters.region === "all" || r.region === regionKey)
+      (r) =>
+        r.sensor === "VIIRS" &&
+        (filters.region === "all" || r.region === regionKey) &&
+        r.year >= minYear &&
+        r.year <= maxYear
     );
     return rows.sort((a, b) => a.year - b.year);
-  }, [yearlyTrends, filters.region, regionKey]);
+  }, [yearlyTrends, filters.region, regionKey, filters.dateRange]);
+
+  const chartSum = useMemo(() => {
+    return viirsTrend.reduce((sum, r) => sum + r.detections, 0);
+  }, [viirsTrend]);
+
+  const isModisSatelliteSelected =
+    filters.satellite === "MODIS" ||
+    filters.satellite === "Terra" ||
+    filters.satellite === "Aqua";
 
   const viirsStats = useMemo(() => {
     let totalDetections = VERIFIED_TOTALS.western_ghats_karnataka.viirs;
@@ -59,6 +85,19 @@ export function ViirsModule({ dashboard, yearlyTrends = [], regionComparison = [
       source = VERIFIED_TOTALS.all.source;
     }
 
+    // Single-satellite VIIRS breakdown if N, N20, or N21 selected
+    if (filters.satellite === "N" || filters.satellite === "N20" || filters.satellite === "N21") {
+      const satCounts = dashboard?.regions[filters.region === "palisades_la" ? "palisades_la" : "western_ghats_karnataka"]?.satellite_counts;
+      const found = satCounts?.find((s) => s.satellite === filters.satellite);
+      if (found) {
+        totalDetections = found.detections;
+        source = `public/data/dashboard.json (${filters.satellite} count)`;
+      }
+    } else if (filters.dateRange !== "all") {
+      totalDetections = chartSum;
+      source = `public/data/yearly_trends.csv (${filters.dateRange} filtered sum)`;
+    }
+
     const dayDetections = Math.round(totalDetections * 0.72);
     const nightDetections = totalDetections - dayDetections;
 
@@ -67,11 +106,11 @@ export function ViirsModule({ dashboard, yearlyTrends = [], regionComparison = [
       dayDetections,
       nightDetections,
       source,
-      satellites: "Suomi-NPP, NOAA-20, NOAA-21",
+      satellites: filters.satellite === "N" ? "Suomi-NPP" : filters.satellite === "N20" ? "NOAA-20 / JPSS-1" : filters.satellite === "N21" ? "NOAA-21 / JPSS-2" : "Suomi-NPP, NOAA-20, NOAA-21",
       nominalResolution: "375 m (I-band)",
-      temporalSpan: "2012 — 2026 (Operational)",
+      temporalSpan: filters.dateRange === "2000-2011" ? "2000 — 2011 (Pre-VIIRS era)" : filters.dateRange === "2012-2024" ? "2012 — 2024 (13 yrs)" : filters.dateRange === "2024-2026" ? "2024 — 2026 (3 yrs)" : "2012 — 2026 (Operational)",
     };
-  }, [filters.region]);
+  }, [filters.region, filters.satellite, filters.dateRange, chartSum, dashboard]);
 
   const dayNightData = useMemo(() => [
     { name: "Daytime Overpass", value: viirsStats.dayDetections, color: "#ffb84d" },
@@ -125,15 +164,25 @@ export function ViirsModule({ dashboard, yearlyTrends = [], regionComparison = [
         </div>
       )}
 
-      {filters.region === "palisades_la" && (
-        <div className="bg-[#ffb84d]/10 border border-[#ffb84d]/30 rounded-lg p-3 flex items-start gap-3">
-          <AlertTriangle size={18} className="text-[#ffb84d] shrink-0 mt-0.5" />
+      {isModisSatelliteSelected && (
+        <div className="bg-[#141d28] border border-[#ff7547]/40 rounded-lg p-3 flex items-start gap-3">
+          <Info size={18} className="text-[#ff7547] shrink-0 mt-0.5" />
           <div className="text-xs text-[#d8e2ef] space-y-0.5">
-            <strong className="text-[#ffb84d]">
-              Data snapshot predates the full-year Palisades data
-            </strong>
+            <strong className="text-[#ff7547]">Filter Notice: VIIRS Module Scope</strong>
             <p className="text-[#8e9eb3]">
-              The pre-full-year static JSON snapshot recorded 4,137 VIIRS detections. Verified full-year totals show <strong className="text-white">5,506 VIIRS detections</strong>.
+              VIIRS module displays Suomi-NPP and NOAA-20/21 observations. Selected MODIS filter (<code>{filters.satellite}</code>) is disabled on this view; switch to the MODIS module for 1km observations.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {filters.confidence === "high" && (
+        <div className="bg-[#141d28] border border-[#233142] rounded-lg p-3 flex items-start gap-3">
+          <Info size={18} className="text-[#61d9fa] shrink-0 mt-0.5" />
+          <div className="text-xs text-[#d8e2ef] space-y-0.5">
+            <strong className="text-[#61d9fa]">Confidence Filter Status</strong>
+            <p className="text-[#8e9eb3]">
+              VIIRS yearly trend is pre-aggregated across cleaned confidence levels (Nominal + High). Low-confidence noise was removed during pipeline cleaning; separate confidence breakdown is disabled on this timeseries.
             </p>
           </div>
         </div>
@@ -205,7 +254,16 @@ export function ViirsModule({ dashboard, yearlyTrends = [], regionComparison = [
               </ResponsiveContainer>
             </div>
           ) : (
-            <DataUnavailable message="No yearly VIIRS observations found for this region." />
+            <DataUnavailable message="No yearly VIIRS observations found for this region / date range." />
+          )}
+
+          {filters.region === "palisades_la" && filters.dateRange === "all" && (
+            <div className="mt-3 p-2.5 bg-[#ffb84d]/10 border border-[#ffb84d]/30 rounded text-xs text-[#ffb84d] flex items-center gap-2">
+              <AlertTriangle size={14} className="shrink-0" />
+              <span>
+                <strong>Data Owner Reconciliation Note:</strong> Annual chart sum across years in <code>yearly_trends.csv</code> totals 5,504 detections, whereas the verified KPI benchmark is 5,506 (2 detections difference pending data owner reconciliation).
+              </span>
+            </div>
           )}
         </Card>
 

@@ -14,19 +14,21 @@ import {
   Info,
   Database,
 } from "lucide-react";
-import { Card, LoadingSkeleton, Status } from "./UI";
+import { Card, LoadingSkeleton, Status, DataUnavailable } from "./UI";
 import { FireMap } from "./FireMap";
 import { useFilters } from "../context/FiltersContext";
-import type { DashboardResponse, MapResponse, HarmonizedSummary } from "../services/apiClient";
-import { hotspots, type Hotspot, type PageName } from "../data";
+import type { DashboardResponse, MapResponse, HarmonizedSummary, YearlyTrendRow } from "../services/apiClient";
+import type { PageName } from "../data";
 
 interface OverviewModuleProps {
   dashboard?: DashboardResponse | null;
   mapData?: MapResponse | null;
   harmonizedSummary?: HarmonizedSummary | null;
+  yearlyTrends?: YearlyTrendRow[];
   setPage: (page: PageName) => void;
   loading?: boolean;
   isStatic?: boolean;
+  onReload?: () => void;
 }
 
 import {
@@ -41,12 +43,13 @@ export function OverviewModule({
   dashboard,
   mapData,
   harmonizedSummary,
+  yearlyTrends = [],
   setPage,
   loading,
   isStatic = true,
+  onReload,
 }: OverviewModuleProps) {
   const { filters, currentRegionMeta } = useFilters();
-  const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
 
   const regionKey = useMemo(() => {
     if (filters.region === "palisades_la") return "palisades_la";
@@ -80,8 +83,70 @@ export function OverviewModule({
 
   const kpis = useMemo(() => {
     let totalDetections = verifiedMeta.total;
-    if (filters.satellite === "MODIS") totalDetections = verifiedMeta.modis;
-    if (filters.satellite === "VIIRS") totalDetections = verifiedMeta.viirs;
+    let source = verifiedMeta.source;
+
+    // 1. Single-satellite breakdown
+    if (filters.satellite === "MODIS") {
+      totalDetections = verifiedMeta.modis;
+    } else if (filters.satellite === "VIIRS") {
+      totalDetections = verifiedMeta.viirs;
+    } else if (
+      filters.satellite === "Terra" ||
+      filters.satellite === "Aqua" ||
+      filters.satellite === "N" ||
+      filters.satellite === "N20" ||
+      filters.satellite === "N21"
+    ) {
+      const satCounts = dashboard?.regions[regionKey]?.satellite_counts;
+      const found = satCounts?.find((s) => s.satellite === filters.satellite);
+      if (found) {
+        totalDetections = found.detections;
+        source = `public/data/dashboard.json (${filters.satellite} count)`;
+      }
+    }
+
+    // 2. High confidence filter
+    if (filters.confidence === "high") {
+      const confCounts = dashboard?.regions[regionKey]?.confidence_counts;
+      const highFound = confCounts?.find((c) => c.confidence === "High");
+      if (highFound) {
+        totalDetections = highFound.detections;
+        source = `public/data/dashboard.json (High confidence count)`;
+      }
+    }
+
+    // 3. Date range filter
+    if (filters.dateRange !== "all") {
+      let minYear = 2000;
+      let maxYear = 2026;
+      if (filters.dateRange === "2000-2011") {
+        minYear = 2000;
+        maxYear = 2011;
+      } else if (filters.dateRange === "2012-2024") {
+        minYear = 2012;
+        maxYear = 2024;
+      } else if (filters.dateRange === "2024-2026") {
+        minYear = 2024;
+        maxYear = 2026;
+      }
+
+      const yKey = filters.region === "palisades_la" ? "palisades" : regionKey;
+      const filteredTrends = yearlyTrends.filter(
+        (r) =>
+          (filters.region === "all" || r.region === yKey) &&
+          (filters.satellite === "MODIS"
+            ? r.sensor === "MODIS"
+            : filters.satellite === "VIIRS"
+            ? r.sensor === "VIIRS"
+            : true) &&
+          r.year >= minYear &&
+          r.year <= maxYear
+      );
+      if (filteredTrends.length > 0) {
+        totalDetections = filteredTrends.reduce((s, r) => s + r.detections, 0);
+        source = `public/data/yearly_trends.csv (${filters.dateRange} filtered)`;
+      }
+    }
 
     let periodSpan = "2000 — 2026";
     let periodYears = "26.0 yrs";
@@ -108,13 +173,26 @@ export function OverviewModule({
       periodYears,
       meanFrpStr,
       harmonizedSourceNote,
+      source,
     };
-  }, [verifiedMeta, filters.satellite, filters.dateRange, harmonizedSummary]);
+  }, [verifiedMeta, filters.satellite, filters.dateRange, filters.confidence, harmonizedSummary, dashboard, regionKey, yearlyTrends]);
 
   if (loading) {
     return (
       <div className="space-y-6">
         <LoadingSkeleton lines={5} />
+      </div>
+    );
+  }
+
+  if (!dashboard || !dashboard.regions) {
+    return (
+      <div className="space-y-6">
+        <DataUnavailable
+          title="Dashboard Summary Unavailable"
+          message="Primary summary dataset (public/data/dashboard.json) could not be loaded."
+          onRetry={onReload || (() => window.location.reload())}
+        />
       </div>
     );
   }
@@ -253,12 +331,9 @@ export function OverviewModule({
         ) : (
           <FireMap
             cells={mapCells}
-            hotspots={hotspots}
             center={currentRegionMeta.coordinates}
             zoomLevel={currentRegionMeta.defaultZoom}
             height={400}
-            onSelect={setSelectedHotspot}
-            selected={selectedHotspot}
           />
         )}
       </Card>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { fetchWithTimeout } from "../services/apiClient";
 import {
   AlertTriangle,
   ArrowUpDown,
@@ -100,8 +101,8 @@ export function RegionalComparison() {
     setError(null);
     try {
       const [compRes, yearlyRes] = await Promise.all([
-        fetch("/data/region_comparison.csv"),
-        fetch("/data/yearly_trends.csv"),
+        fetchWithTimeout("/data/region_comparison.csv"),
+        fetchWithTimeout("/data/yearly_trends.csv"),
       ]);
 
       if (!compRes.ok) {
@@ -127,6 +128,13 @@ export function RegionalComparison() {
         modis_only: parseInt(r.modis_only, 10),
         share_modis_seen_by_viirs: parseFloat(r.share_modis_seen_by_viirs),
       }));
+
+      if (parsedComp.length === 0) {
+        throw new Error("Regional comparison dataset is empty.");
+      }
+      if (parsedComp.some((r) => !r.region || isNaN(r.cell_size) || isNaN(r.rows))) {
+        throw new Error("Regional comparison dataset contains malformed data.");
+      }
 
       const parsedYearly = parseCsv(yearlyText).map((r) => ({
         region: r.region,

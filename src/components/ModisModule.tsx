@@ -32,11 +32,38 @@ export function ModisModule({ dashboard, yearlyTrends = [], regionComparison = [
   }, [filters.region]);
 
   const modisTrend = useMemo(() => {
+    let minYear = 2000;
+    let maxYear = 2026;
+    if (filters.dateRange === "2000-2011") {
+      minYear = 2000;
+      maxYear = 2011;
+    } else if (filters.dateRange === "2012-2024") {
+      minYear = 2012;
+      maxYear = 2024;
+    } else if (filters.dateRange === "2024-2026") {
+      minYear = 2024;
+      maxYear = 2026;
+    }
+
     const rows = yearlyTrends.filter(
-      (r) => r.sensor === "MODIS" && (filters.region === "all" || r.region === regionKey)
+      (r) =>
+        r.sensor === "MODIS" &&
+        (filters.region === "all" || r.region === regionKey) &&
+        r.year >= minYear &&
+        r.year <= maxYear
     );
     return rows.sort((a, b) => a.year - b.year);
-  }, [yearlyTrends, filters.region, regionKey]);
+  }, [yearlyTrends, filters.region, regionKey, filters.dateRange]);
+
+  const chartSum = useMemo(() => {
+    return modisTrend.reduce((sum, r) => sum + r.detections, 0);
+  }, [modisTrend]);
+
+  const isViirsSatelliteSelected =
+    filters.satellite === "VIIRS" ||
+    filters.satellite === "N" ||
+    filters.satellite === "N20" ||
+    filters.satellite === "N21";
 
   const modisStats = useMemo(() => {
     let totalDetections = VERIFIED_TOTALS.western_ghats_karnataka.modis;
@@ -56,14 +83,27 @@ export function ModisModule({ dashboard, yearlyTrends = [], regionComparison = [
       source = VERIFIED_TOTALS.all.source;
     }
 
+    // Single-satellite MODIS breakdown if Terra or Aqua selected
+    if (filters.satellite === "Terra" || filters.satellite === "Aqua") {
+      const satCounts = dashboard?.regions[filters.region === "palisades_la" ? "palisades_la" : "western_ghats_karnataka"]?.satellite_counts;
+      const found = satCounts?.find((s) => s.satellite === filters.satellite);
+      if (found) {
+        totalDetections = found.detections;
+        source = `public/data/dashboard.json (${filters.satellite} count)`;
+      }
+    } else if (filters.dateRange !== "all") {
+      totalDetections = chartSum;
+      source = `public/data/yearly_trends.csv (${filters.dateRange} filtered sum)`;
+    }
+
     return {
       totalDetections,
       source,
-      satellites: "Terra (AM 10:30) & Aqua (PM 13:30)",
+      satellites: filters.satellite === "Terra" ? "Terra (AM 10:30)" : filters.satellite === "Aqua" ? "Aqua (PM 13:30)" : "Terra (AM 10:30) & Aqua (PM 13:30)",
       nominalResolution: "1,000 m (1 km)",
-      temporalSpan: "2000 — 2026 (26 yrs)",
+      temporalSpan: filters.dateRange === "2000-2011" ? "2000 — 2011 (12 yrs)" : filters.dateRange === "2012-2024" ? "2012 — 2024 (13 yrs)" : filters.dateRange === "2024-2026" ? "2024 — 2026 (3 yrs)" : "2000 — 2026 (26 yrs)",
     };
-  }, [filters.region]);
+  }, [filters.region, filters.satellite, filters.dateRange, chartSum, dashboard]);
 
   if (loading) {
     return (
@@ -112,15 +152,25 @@ export function ModisModule({ dashboard, yearlyTrends = [], regionComparison = [
         </div>
       )}
 
-      {filters.region === "palisades_la" && (
-        <div className="bg-[#ffb84d]/10 border border-[#ffb84d]/30 rounded-lg p-3 flex items-start gap-3">
-          <AlertTriangle size={18} className="text-[#ffb84d] shrink-0 mt-0.5" />
+      {isViirsSatelliteSelected && (
+        <div className="bg-[#141d28] border border-[#ff7547]/40 rounded-lg p-3 flex items-start gap-3">
+          <Info size={18} className="text-[#ff7547] shrink-0 mt-0.5" />
           <div className="text-xs text-[#d8e2ef] space-y-0.5">
-            <strong className="text-[#ffb84d]">
-              Data snapshot predates the full-year Palisades data
-            </strong>
+            <strong className="text-[#ff7547]">Filter Notice: MODIS Module Scope</strong>
             <p className="text-[#8e9eb3]">
-              The pre-full-year static JSON snapshot recorded 423 MODIS detections. Verified full-year totals show <strong className="text-white">577 MODIS detections</strong>.
+              MODIS module displays Terra and Aqua observations. Selected VIIRS filter (<code>{filters.satellite}</code>) is disabled on this view; switch to the VIIRS module for 375m observations.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {filters.confidence === "high" && (
+        <div className="bg-[#141d28] border border-[#233142] rounded-lg p-3 flex items-start gap-3">
+          <Info size={18} className="text-[#61d9fa] shrink-0 mt-0.5" />
+          <div className="text-xs text-[#d8e2ef] space-y-0.5">
+            <strong className="text-[#61d9fa]">Confidence Filter Status</strong>
+            <p className="text-[#8e9eb3]">
+              MODIS yearly trend is pre-aggregated across all cleaned confidence levels (Nominal + High). Low-confidence noise was removed during pipeline cleaning; separate confidence breakdown is disabled on this timeseries.
             </p>
           </div>
         </div>
