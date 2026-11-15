@@ -1,0 +1,67 @@
+{
+  "report_id": "data_quality_report_20261114_111033",
+  "generated_at_utc": "2026-11-14 11:10:33 UTC",
+  "source_processed": "data\\processed\\palisades_la_VIIRS_processed.json",
+  "source_quarantine": "data\\quarantine\\palisades_la_VIIRS_quarantined.json",
+  "total_input_records": 4137,
+  "valid_accepted_records": 4137,
+  "quarantined_records": 0,
+  "pass_rate_pct": 100.0,
+  "counts_reconciled": true,
+  "reconciliation_source": "Verified against raw ingest manifest",
+  "observed_detection_bounds": {
+    "min_lat": 34.01585,
+    "max_lat": 34.19991,
+    "min_lng": -118.73651,
+    "max_lng": -118.44553,
+    "min_lat_formatted": "34.01585\u00b0N",
+    "max_lat_formatted": "34.19991\u00b0N",
+    "min_lng_formatted": "118.73651\u00b0W",
+    "max_lng_formatted": "118.44553\u00b0W"
+  },
+  "preliminary_study_window": {
+    "min_lat": 33.95,
+    "max_lat": 34.15,
+    "min_lng": -118.65,
+    "max_lng": -118.45
+  },
+  "temporal_range_utc": {
+    "earliest_date": "2013-01-31",
+    "latest_date": "2026-02-28"
+  },
+  "sensor_distribution": {
+    "VIIRS S-NPP": 1204,
+    "VIIRS (N20)": 1245,
+    "VIIRS (N21)": 1688
+  },
+  "family_distribution": {
+    "VIIRS": 4137
+  },
+  "quarantine_defects": {},
+  "verified_checklist": {
+    "confidence_raw_preservation": {
+      "status": "PASSED",
+      "detail": "Verified: 100% (4137/4137) of records with input confidence preserved confidence_raw without loss"
+    },
+    "confidence_separation": {
+      "status": "PASSED",
+      "detail": "Verified: Sensor scales isolated across 0 MODIS and 4137 VIIRS records without cross-conversion"
+    },
+    "raw_scan_track_unrounded": {
+      "status": "PASSED",
+      "detail": "Verified: Original float dimensions preserved without rounding across all 4137 observations"
+    },
+    "fatal_defects_quarantined": {
+      "status": "PASSED",
+      "detail": "Verified: 0 fatal defects in valid records; all 0 quarantined records carry traceable defect logs"
+    },
+    "cross_satellite_independence": {
+      "status": "PASSED",
+      "detail": "Verified: Cross-satellite detections are preserved independently; overlap flag initialized to unassessed (None)"
+    },
+    "spatial_extent_verified": {
+      "status": "EXTENDS_BEYOND_PRELIMINARY_BOX",
+      "detail": "Observed detections extend beyond preliminary box: Max Lat 34.1999 > 34.15; Min Lng -118.7365 < -118.65; Max Lng -118.4455 > -118.45. Adjust boundary before final study ingestion."
+    }
+  }
+}

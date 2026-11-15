@@ -1,0 +1,449 @@
+{
+  "generated_at_utc": "2026-11-15T05:25:30.078050+00:00",
+  "source": "Cleaned NASA FIRMS combined Parquet datasets",
+  "data_type": "observed_detections",
+  "cell_size_degrees": 0.25,
+  "total_detections": 138165,
+  "regions": {
+    "western_ghats_karnataka": {
+      "label": "Western Ghats, Karnataka",
+      "total_detections": 133605,
+      "date_start": "2000-11-11T05:41:00+00:00",
+      "date_end": "2026-11-14T09:09:00+00:00",
+      "year_start": 2000,
+      "year_end": 2026,
+      "unique_detection_days": 4616,
+      "unique_grid_cells": 92,
+      "frp": {
+        "available_records": 133605,
+        "mean": 7.2640025448149395,
+        "median": 4.71,
+        "maximum": 414.7
+      },
+      "yearly_trend": [
+        {
+          "year": 2000,
+          "detections": 28
+        },
+        {
+          "year": 2001,
+          "detections": 199
+        },
+        {
+          "year": 2002,
+          "detections": 182
+        },
+        {
+          "year": 2003,
+          "detections": 484
+        },
+        {
+          "year": 2004,
+          "detections": 1124
+        },
+        {
+          "year": 2005,
+          "detections": 730
+        },
+        {
+          "year": 2006,
+          "detections": 784
+        },
+        {
+          "year": 2007,
+          "detections": 600
+        },
+        {
+          "year": 2008,
+          "detections": 607
+        },
+        {
+          "year": 2009,
+          "detections": 605
+        },
+        {
+          "year": 2010,
+          "detections": 371
+        },
+        {
+          "year": 2011,
+          "detections": 1002
+        },
+        {
+          "year": 2012,
+          "detections": 6629
+        },
+        {
+          "year": 2013,
+          "detections": 6826
+        },
+        {
+          "year": 2014,
+          "detections": 5376
+        },
+        {
+          "year": 2015,
+          "detections": 4681
+        },
+        {
+          "year": 2016,
+          "detections": 8805
+        },
+        {
+          "year": 2017,
+          "detections": 8093
+        },
+        {
+          "year": 2018,
+          "detections": 8020
+        },
+        {
+          "year": 2019,
+          "detections": 10165
+        },
+        {
+          "year": 2020,
+          "detections": 6282
+        },
+        {
+          "year": 2021,
+          "detections": 5518
+        },
+        {
+          "year": 2022,
+          "detections": 6596
+        },
+        {
+          "year": 2023,
+          "detections": 21560
+        },
+        {
+          "year": 2024,
+          "detections": 8681
+        },
+        {
+          "year": 2025,
+          "detections": 10533
+        },
+        {
+          "year": 2026,
+          "detections": 9124
+        }
+      ],
+      "monthly_distribution": [
+        {
+          "month": 1,
+          "detections": 20890
+        },
+        {
+          "month": 2,
+          "detections": 36905
+        },
+        {
+          "month": 3,
+          "detections": 45625
+        },
+        {
+          "month": 4,
+          "detections": 12810
+        },
+        {
+          "month": 5,
+          "detections": 3800
+        },
+        {
+          "month": 6,
+          "detections": 508
+        },
+        {
+          "month": 7,
+          "detections": 28
+        },
+        {
+          "month": 8,
+          "detections": 73
+        },
+        {
+          "month": 9,
+          "detections": 194
+        },
+        {
+          "month": 10,
+          "detections": 829
+        },
+        {
+          "month": 11,
+          "detections": 3125
+        },
+        {
+          "month": 12,
+          "detections": 8818
+        }
+      ],
+      "sensor_counts": [
+        {
+          "sensor": "MODIS",
+          "detections": 18131
+        },
+        {
+          "sensor": "VIIRS",
+          "detections": 115474
+        }
+      ],
+      "satellite_counts": [
+        {
+          "satellite": "Aqua",
+          "detections": 11418
+        },
+        {
+          "satellite": "N",
+          "detections": 70196
+        },
+        {
+          "satellite": "N20",
+          "detections": 31670
+        },
+        {
+          "satellite": "N21",
+          "detections": 13608
+        },
+        {
+          "satellite": "Terra",
+          "detections": 6713
+        }
+      ],
+      "daynight_counts": [
+        {
+          "period": "Day",
+          "detections": 99766
+        },
+        {
+          "period": "Night",
+          "detections": 33839
+        }
+      ],
+      "confidence_counts": [
+        {
+          "confidence": "Nominal",
+          "detections": 126991
+        },
+        {
+          "confidence": "High",
+          "detections": 6614
+        }
+      ],
+      "vegetation_counts": [
+        {
+          "vegetation_fire": true,
+          "detections": 133028
+        },
+        {
+          "vegetation_fire": false,
+          "detections": 577
+        }
+      ]
+    },
+    "palisades_la": {
+      "label": "Palisades, California",
+      "total_detections": 4560,
+      "date_start": "2005-09-29T09:10:00+00:00",
+      "date_end": "2026-02-28T09:52:00+00:00",
+      "year_start": 2005,
+      "year_end": 2026,
+      "unique_detection_days": 56,
+      "unique_grid_cells": 2,
+      "frp": {
+        "available_records": 4560,
+        "mean": 56.16497587719298,
+        "median": 13.25,
+        "maximum": 4563.4
+      },
+      "yearly_trend": [
+        {
+          "year": 2005,
+          "detections": 27
+        },
+        {
+          "year": 2006,
+          "detections": 5
+        },
+        {
+          "year": 2007,
+          "detections": 49
+        },
+        {
+          "year": 2008,
+          "detections": 10
+        },
+        {
+          "year": 2009,
+          "detections": 2
+        },
+        {
+          "year": 2012,
+          "detections": 4
+        },
+        {
+          "year": 2013,
+          "detections": 2
+        },
+        {
+          "year": 2014,
+          "detections": 4
+        },
+        {
+          "year": 2015,
+          "detections": 1
+        },
+        {
+          "year": 2016,
+          "detections": 1
+        },
+        {
+          "year": 2017,
+          "detections": 22
+        },
+        {
+          "year": 2018,
+          "detections": 2
+        },
+        {
+          "year": 2020,
+          "detections": 2
+        },
+        {
+          "year": 2022,
+          "detections": 7
+        },
+        {
+          "year": 2023,
+          "detections": 1
+        },
+        {
+          "year": 2024,
+          "detections": 438
+        },
+        {
+          "year": 2025,
+          "detections": 3979
+        },
+        {
+          "year": 2026,
+          "detections": 4
+        }
+      ],
+      "monthly_distribution": [
+        {
+          "month": 1,
+          "detections": 3985
+        },
+        {
+          "month": 2,
+          "detections": 14
+        },
+        {
+          "month": 3,
+          "detections": 0
+        },
+        {
+          "month": 4,
+          "detections": 0
+        },
+        {
+          "month": 5,
+          "detections": 1
+        },
+        {
+          "month": 6,
+          "detections": 0
+        },
+        {
+          "month": 7,
+          "detections": 5
+        },
+        {
+          "month": 8,
+          "detections": 7
+        },
+        {
+          "month": 9,
+          "detections": 30
+        },
+        {
+          "month": 10,
+          "detections": 41
+        },
+        {
+          "month": 11,
+          "detections": 15
+        },
+        {
+          "month": 12,
+          "detections": 462
+        }
+      ],
+      "sensor_counts": [
+        {
+          "sensor": "MODIS",
+          "detections": 423
+        },
+        {
+          "sensor": "VIIRS",
+          "detections": 4137
+        }
+      ],
+      "satellite_counts": [
+        {
+          "satellite": "Aqua",
+          "detections": 244
+        },
+        {
+          "satellite": "N",
+          "detections": 1204
+        },
+        {
+          "satellite": "N20",
+          "detections": 1245
+        },
+        {
+          "satellite": "N21",
+          "detections": 1688
+        },
+        {
+          "satellite": "Terra",
+          "detections": 179
+        }
+      ],
+      "daynight_counts": [
+        {
+          "period": "Night",
+          "detections": 3271
+        },
+        {
+          "period": "Day",
+          "detections": 1289
+        }
+      ],
+      "confidence_counts": [
+        {
+          "confidence": "Nominal",
+          "detections": 3650
+        },
+        {
+          "confidence": "High",
+          "detections": 910
+        }
+      ],
+      "vegetation_counts": [
+        {
+          "vegetation_fire": true,
+          "detections": 4307
+        },
+        {
+          "vegetation_fire": false,
+          "detections": 253
+        }
+      ]
+    }
+  }
+}

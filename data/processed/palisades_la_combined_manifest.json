@@ -1,0 +1,24 @@
+{
+  "file_name": "palisades_la_combined.csv",
+  "input_file": "data\\data\\clean\\csv\\palisades_la_combined.csv",
+  "dataset_family": "MIXED",
+  "family_counts": {
+    "MODIS": 423,
+    "VIIRS": 4137
+  },
+  "total_input_records": 4560,
+  "valid_accepted_records": 4560,
+  "quarantined_records": 0,
+  "reconciliation_passed": true,
+  "spatial_bounds": {
+    "has_spatial_data": true,
+    "record_count_with_coords": 4560,
+    "min_lat": 34.01585,
+    "max_lat": 34.19991,
+    "min_lng": -118.7498,
+    "max_lng": -118.435,
+    "center_lat": 34.10788,
+    "center_lng": -118.5924,
+    "center_definition": "bounding_box_midpoint"
+  }
+}

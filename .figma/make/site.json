@@ -1,0 +1,10 @@
+{
+  "description": "Analyze satellite fire data from MODIS and VIIRS sensors to explore fire activity patterns, compare observations across time and sensors, and detect anomalies with transparent data quality reporting.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

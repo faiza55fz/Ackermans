@@ -1,0 +1,23 @@
+{
+  "file_name": "palisades_la_VIIRS.csv",
+  "input_file": "data\\data\\clean\\csv\\palisades_la_VIIRS.csv",
+  "dataset_family": "VIIRS",
+  "family_counts": {
+    "VIIRS": 4137
+  },
+  "total_input_records": 4137,
+  "valid_accepted_records": 4137,
+  "quarantined_records": 0,
+  "reconciliation_passed": true,
+  "spatial_bounds": {
+    "has_spatial_data": true,
+    "record_count_with_coords": 4137,
+    "min_lat": 34.01585,
+    "max_lat": 34.19991,
+    "min_lng": -118.73651,
+    "max_lng": -118.44553,
+    "center_lat": 34.10788,
+    "center_lng": -118.59102,
+    "center_definition": "bounding_box_midpoint"
+  }
+}
