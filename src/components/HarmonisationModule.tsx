@@ -93,13 +93,13 @@ export function HarmonisationModule({ harmonizedSummary, loading, onReload }: Ha
         </div>
       )}
 
-      {filters.region === "punjab_haryana" && (
+      {filters.region !== "western_ghats_karnataka" && filters.region !== "nsw_victoria_au" && (
         <div className="bg-[#141d28] border border-[#36c9f4]/30 rounded-lg p-4 flex items-start gap-3">
           <Info size={20} className="text-[#61d9fa] shrink-0 mt-0.5" />
           <div className="text-xs text-[#d8e2ef] space-y-1">
-            <strong className="text-[#61d9fa]">Harmonisation Model Scope: Regional Calibration</strong>
+            <strong className="text-[#61d9fa]">Dataset Scope (File Metadata: metadata.region)</strong>
             <p className="text-[#8e9eb3]">
-              The statistical harmonisation model shown below was calibrated on Western Ghats Karnataka ({rows.total.toLocaleString()} rows). A region-specific harmonisation model run for Punjab & Haryana is pending agricultural fire regime parameterization.
+              The file records <code>metadata.region: "western_ghats_karnataka"</code> across {rows.total.toLocaleString()} rows. No harmonized output dataset is present in <code>public/data/</code> for {currentRegionMeta.label}.
             </p>
           </div>
         </div>
@@ -108,9 +108,9 @@ export function HarmonisationModule({ harmonizedSummary, loading, onReload }: Ha
       <div className="bg-[#ffb84d]/10 border border-[#ffb84d]/30 rounded-lg p-4 flex items-start gap-3">
         <ShieldAlert size={20} className="text-[#ffb84d] shrink-0 mt-0.5" />
         <div className="text-xs text-[#d8e2ef] space-y-1">
-          <strong className="text-[#ffb84d]">Scientific Methodology & Pre-2012 Estimation Scope</strong>
+          <strong className="text-[#ffb84d]">Dataset Composition (metadata.n_rows & aggregated_metrics)</strong>
           <p>
-            Pre-2012 fire days represent real, observed MODIS observations. The model estimates what VIIRS would have detected (<code className="text-white font-mono">predicted_n_detections_VIIRS</code>) and normalizes fire radiative power (<code className="text-white font-mono">calibrated_frp</code>) to provide an unbroken multi-decade baseline without sensor transition discontinuities.
+            The file lists {rows.total.toLocaleString()} rows (<code>metadata.n_rows</code>): {rows.observed.toLocaleString()} observed and {rows.estimated.toLocaleString()} estimated (<code>aggregated_metrics.rows_by_source</code>). Columns include <code className="text-white font-mono">predicted_n_detections_VIIRS</code> and <code className="text-white font-mono">calibrated_frp</code> (<code>metadata.columns</code>). Definition of estimation methodology provided by the harmonisation owner: pending.
           </p>
         </div>
       </div>
@@ -273,7 +273,7 @@ export function HarmonisationModule({ harmonizedSummary, loading, onReload }: Ha
               Results not available yet (provided by the harmonisation backend)
             </strong>
             <p className="text-[#8e9eb3]">
-              The source metadata in <code>harmonized_summary.json</code> records the model family (<code>{countModel}</code>) but does not record an explicit out-of-sample R² value.
+              The file metadata records <code>note: "In-sample pipeline output; not independent validation."</code> No goodness-of-fit metrics (such as R² or RMSE) are recorded in the file metadata.
             </p>
           </div>
         </Card>
@@ -285,11 +285,11 @@ export function HarmonisationModule({ harmonizedSummary, loading, onReload }: Ha
               <strong className="text-[#36c9f4]">{rows.observed.toLocaleString()} ({observedPct}%)</strong>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[#233142]">
-              <span>Pre-2012 VIIRS Model Estimates</span>
+              <span>Estimated Metric Rows</span>
               <strong className="text-[#ffb84d]">{rows.estimated.toLocaleString()} ({estimatedPct}%)</strong>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[#233142]">
-              <span>Total Harmonized Series Rows</span>
+              <span>Total Rows (metadata.n_rows)</span>
               <strong className="text-white">{rows.total.toLocaleString()} rows</strong>
             </div>
           </div>
@@ -298,15 +298,15 @@ export function HarmonisationModule({ harmonizedSummary, loading, onReload }: Ha
         <Card title="Processing Provenance" eyebrow="Source Information">
           <div className="space-y-2 text-xs text-[#8e9eb3] mt-2">
             <div className="flex justify-between py-1 border-b border-[#233142]">
-              <span>Input Dataset</span>
-              <span className="text-white font-mono text-[11px]">western_ghats_combined.parquet</span>
+              <span>Input File (metadata.input)</span>
+              <span className="text-white font-mono text-[11px]">western_ghats_karnataka_combined.parquet</span>
             </div>
             <div className="flex justify-between py-1 border-b border-[#233142]">
               <span>Generated UTC</span>
               <span className="text-white font-mono text-[11px]">{harmonizedSummary.createdAt}</span>
             </div>
             <div className="flex justify-between py-1 border-b border-[#233142]">
-              <span>Validation Class</span>
+              <span>Validation Class (metadata.note)</span>
               <span className="text-[#ffb84d]">In-sample pipeline output</span>
             </div>
           </div>
