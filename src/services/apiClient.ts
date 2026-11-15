@@ -121,6 +121,30 @@ export interface ApiFilterParams {
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined) || "";
 export const DATA_SOURCE = ((import.meta.env.VITE_DATA_SOURCE as string | undefined) || "static").toLowerCase();
 export const IS_STATIC_MODE = DATA_SOURCE !== "api";
+export const REQUEST_TIMEOUT_MS = 10000;
+
+export async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+  timeoutMs: number = REQUEST_TIMEOUT_MS
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(input, {
+      ...init,
+      signal: init?.signal || controller.signal,
+    });
+    return res;
+  } catch (err: unknown) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(`Request timed out after ${timeoutMs / 1000} seconds.`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
 
 function safeNumber(val: unknown, fallback = 0): number {
   if (typeof val === "number" && Number.isFinite(val)) return val;
@@ -254,12 +278,12 @@ export async function fetchDashboardSummary(params?: ApiFilterParams): Promise<D
     if (params?.satellite) q.set("satellite", params.satellite);
     if (params?.confidence) q.set("confidence", params.confidence);
 
-    const res = await fetch(`${API_BASE_URL}/api/v1/summary?${q.toString()}`);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/summary?${q.toString()}`);
     if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
     return res.json();
   }
 
-  const res = await fetch("/data/dashboard.json");
+  const res = await fetchWithTimeout("/data/dashboard.json");
   if (!res.ok) throw new Error("Unable to load /data/dashboard.json static asset.");
   return res.json();
 }
@@ -271,32 +295,32 @@ export async function fetchMapCells(params?: ApiFilterParams): Promise<MapRespon
     if (params?.satellite) q.set("satellite", params.satellite);
     if (params?.confidence) q.set("confidence", params.confidence);
 
-    const res = await fetch(`${API_BASE_URL}/api/v1/grid?${q.toString()}`);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/grid?${q.toString()}`);
     if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
     return res.json();
   }
 
-  const res = await fetch("/data/map.json");
+  const res = await fetchWithTimeout("/data/map.json");
   if (!res.ok) throw new Error("Unable to load /data/map.json static asset.");
   return res.json();
 }
 
 export async function fetchHarmonizedSummary(): Promise<HarmonizedSummary> {
   if (!IS_STATIC_MODE && API_BASE_URL) {
-    const res = await fetch(`${API_BASE_URL}/api/v1/harmonization/summary`);
+    const res = await fetchWithTimeout(`${API_BASE_URL}/api/v1/harmonization/summary`);
     if (!res.ok) throw new Error(`API error ${res.status}: ${res.statusText}`);
     const json = await res.json();
     return parseHarmonizedSummary(json);
   }
 
-  const res = await fetch("/data/harmonized_summary.json");
+  const res = await fetchWithTimeout("/data/harmonized_summary.json");
   if (!res.ok) throw new Error("Unable to load /data/harmonized_summary.json static asset.");
   const json = await res.json();
   return parseHarmonizedSummary(json);
 }
 
 export async function fetchYearlyTrends(): Promise<YearlyTrendRow[]> {
-  const res = await fetch("/data/yearly_trends.csv");
+  const res = await fetchWithTimeout("/data/yearly_trends.csv");
   if (!res.ok) throw new Error("Unable to load /data/yearly_trends.csv");
   const text = await res.text();
   const lines = text.trim().split("\n");
@@ -319,7 +343,7 @@ export async function fetchYearlyTrends(): Promise<YearlyTrendRow[]> {
 }
 
 export async function fetchRegionComparison(): Promise<RegionComparisonRow[]> {
-  const res = await fetch("/data/region_comparison.csv");
+  const res = await fetchWithTimeout("/data/region_comparison.csv");
   if (!res.ok) throw new Error("Unable to load /data/region_comparison.csv");
   const text = await res.text();
   const lines = text.trim().split("\n");
