@@ -11,11 +11,12 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import type { Hotspot } from "../data";
+import type { Hotspot, MapCell } from "../data";
 import "leaflet/dist/leaflet.css";
 
 type FireMapProps = {
-  hotspots: Hotspot[];
+  hotspots?: Hotspot[];
+  cells?: MapCell[];
   height?: number | string;
   compact?: boolean;
   family?: "MODIS" | "VIIRS";
@@ -24,6 +25,10 @@ type FireMapProps = {
   onDrawPoint?: (point: [number, number]) => void;
   onSelect?: (hotspot: Hotspot) => void;
   selected?: Hotspot | null;
+  onSelectCell?: (cell: MapCell) => void;
+  selectedCell?: MapCell | null;
+  center?: [number, number];
+  zoomLevel?: number;
 };
 
 function MapEvents({
@@ -61,6 +66,16 @@ function makeIcon(family: "MODIS" | "VIIRS" | "MIXED", selected = false, count?:
 
 // Built-in catalog covering all US states, territories, Canadian provinces and key fire regions
 const knownLocations: Record<string, [number, number, number]> = {
+  // FireTrace Project Study Regions
+  "western ghats": [14.5, 75.0, 8],
+  "karnataka": [14.5, 75.0, 8],
+  "punjab": [30.8, 75.8, 8],
+  "haryana": [29.0, 76.0, 8],
+  "punjab & haryana": [30.5, 75.8, 8],
+  "palisades": [34.05, -118.53, 11],
+  "pacific palisades": [34.05, -118.53, 11],
+  "india": [20.59, 78.96, 5],
+
   // Western US Fire Regions & Datasets
   "northern california": [40.0, -121.5, 7],
   "central california": [37.2, -119.8, 7],
@@ -221,7 +236,8 @@ function clusterHotspots(points: Hotspot[], zoom: number): ClusterItem[] {
 }
 
 export function FireMap({
-  hotspots,
+  hotspots = [],
+  cells,
   height = 430,
   compact,
   family,
@@ -230,17 +246,27 @@ export function FireMap({
   onDrawPoint,
   onSelect,
   selected,
+  onSelectCell,
+  selectedCell,
+  center,
+  zoomLevel,
 }: FireMapProps) {
   const [map, setMap] = useState<L.Map | null>(null);
-  const [zoom, setZoom] = useState(compact ? 4 : 5);
+  const [zoom, setZoom] = useState(zoomLevel ?? (compact ? 4 : 5));
   const [layer, setLayer] = useState<"dark" | "street">("dark");
   const [layerOpen, setLayerOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [searchStatus, setSearchStatus] = useState<"idle" | "searching" | "not-found">("idle");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const defaultCenter: [number, number] = [39.6, -116.5];
-  const defaultZoom = compact ? 4 : 5;
+  const defaultCenter: [number, number] = center ?? [39.6, -116.5];
+  const defaultZoom = zoomLevel ?? (compact ? 4 : 5);
+
+  useEffect(() => {
+    if (map && center) {
+      map.flyTo(center, zoomLevel ?? (compact ? 5 : 8), { duration: 0.8 });
+    }
+  }, [map, center, zoomLevel, compact]);
 
   const visible = useMemo(
     () => (family ? hotspots.filter((point) => point.family === family) : hotspots),
@@ -380,6 +406,51 @@ export function FireMap({
         )}
 
         <MapEvents onZoom={setZoom} drawMode={drawMode} onDrawPoint={onDrawPoint} />
+
+        {cells?.map((cell) => {
+          const isSelected = selectedCell?.cell_id === cell.cell_id;
+          const isConsensus = cell.modis_detections > 0 && cell.viirs_detections > 0;
+          const isViirsOnly = cell.modis_detections === 0 && cell.viirs_detections > 0;
+          const fillColor = isConsensus ? "#ffb84d" : isViirsOnly ? "#36c9f4" : "#ff7547";
+          const radius = Math.max(3000, Math.min(22000, Math.sqrt(cell.detections) * 1100));
+
+          return (
+            <Circle
+              key={`grid-cell-${cell.cell_id}`}
+              center={[cell.latitude, cell.longitude]}
+              radius={radius}
+              pathOptions={{
+                color: isSelected ? "#ffffff" : fillColor,
+                weight: isSelected ? 3 : 1.5,
+                fillColor,
+                fillOpacity: isSelected ? 0.75 : 0.42,
+              }}
+              eventHandlers={{
+                click: () => onSelectCell?.(cell),
+              }}
+            >
+              <Tooltip direction="top" offset={[0, -10]}>
+                <strong>Grid Cell: {cell.cell_id}</strong>
+                <br />
+                <span>{cell.detections.toLocaleString()} Detections</span>
+                <br />
+                <span style={{ color: "#ff7547" }}>{cell.modis_detections} MODIS</span>
+                <span> · </span>
+                <span style={{ color: "#36c9f4" }}>{cell.viirs_detections} VIIRS</span>
+                {cell.mean_frp !== null && (
+                  <>
+                    <br />
+                    <span>Mean FRP: {cell.mean_frp} MW</span>
+                  </>
+                )}
+                <br />
+                <span style={{ opacity: 0.8, fontSize: "10px" }}>
+                  {cell.first_date} to {cell.last_date}
+                </span>
+              </Tooltip>
+            </Circle>
+          );
+        })}
 
         {heatmap &&
           visible.map((point) => (
