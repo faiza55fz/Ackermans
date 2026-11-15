@@ -26,3 +26,6 @@ __pycache__/
 gis/__pycache__/
 gis/output/*_test.geojson
 gis/output/*_test.png
+# Local datasets and generated pipeline outputs
+/data/data/clean/
+/outputs/
