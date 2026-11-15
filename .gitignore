@@ -23,3 +23,6 @@ logs/
 # Python cache files
 __pycache__/
 *.py[cod]
+gis/__pycache__/
+gis/output/*_test.geojson
+gis/output/*_test.png
