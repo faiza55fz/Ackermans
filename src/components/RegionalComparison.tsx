@@ -401,46 +401,56 @@ export function RegionalComparison() {
           eyebrow={`Spatial Grid Resolution: ${chartACellSize}°`}
           title={`Chart A: Unique Hotspot Cells by Sensor (${chartACellSize}° Grid)`}
           action={
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               {/* Linear / Log Toggle for Chart A */}
-              <div className="flex items-center gap-1 p-0.5 bg-slate-900 border border-slate-700/80 rounded-lg">
+              <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-700/80 rounded-lg shadow-sm whitespace-nowrap">
                 <button
                   type="button"
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
                     chartAScale === "linear"
                       ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                   onClick={() => setChartAScale("linear")}
                 >
-                  Linear
+                  Linear Scale
                 </button>
                 <button
                   type="button"
-                  className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-all ${
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                     chartAScale === "log"
                       ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                   onClick={() => setChartAScale("log")}
                 >
-                  Log10
+                  Log10 Scale
                 </button>
               </div>
 
-              {/* Cell Size Toggle */}
-              <div className="segmented">
+              {/* Cell Size Toggle - Bigger, single-line label, clear active state */}
+              <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-700/80 rounded-lg shadow-sm whitespace-nowrap">
                 <button
-                  className={chartACellSize === 0.05 ? "active" : ""}
+                  type="button"
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+                    chartACellSize === 0.05
+                      ? "bg-amber-500 text-slate-950 shadow-md font-bold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
                   onClick={() => setChartACellSize(0.05)}
                 >
-                  0.05° (~5.5 km)
+                  0.05° grid (coarse, ~5.5 km)
                 </button>
                 <button
-                  className={chartACellSize === 0.01 ? "active" : ""}
+                  type="button"
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all whitespace-nowrap ${
+                    chartACellSize === 0.01
+                      ? "bg-cyan-500 text-slate-950 shadow-md font-bold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
                   onClick={() => setChartACellSize(0.01)}
                 >
-                  0.01° (~1.1 km)
+                  0.01° grid (fine, ~1.1 km)
                 </button>
               </div>
             </div>
@@ -575,24 +585,6 @@ export function RegionalComparison() {
                     );
                   }}
                 />
-                <Legend
-                  payload={[
-                    {
-                      value: "0.05° Grid (Coarse ~5.5 km)",
-                      type: "rect",
-                      id: "0.05° Grid (Coarse)",
-                      color: CHART_COLORS.grid005,
-                    },
-                    {
-                      value: "0.01° Grid (Fine ~1.1 km)",
-                      type: "rect",
-                      id: "0.01° Grid (Fine)",
-                      color: CHART_COLORS.grid001,
-                    },
-                  ]}
-                  wrapperStyle={{ paddingTop: "12px", fontSize: "12px" }}
-                  formatter={(value) => <span className="text-slate-300">{value}</span>}
-                />
                 <Bar
                   name="0.05° Grid (Coarse ~5.5 km)"
                   dataKey="0.05° Grid (Coarse)"
@@ -623,6 +615,24 @@ export function RegionalComparison() {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Custom Plain JSX Legend for Chart B (Guaranteed 0.05° first, then 0.01°) */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-3 pt-1 text-xs text-slate-300">
+            <div className="flex items-center gap-2">
+              <span
+                className="w-3.5 h-3.5 rounded-sm inline-block shrink-0 shadow-sm"
+                style={{ backgroundColor: CHART_COLORS.grid005 }}
+              />
+              <span className="font-medium text-slate-200">0.05° grid (coarse, ~5.5 km)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="w-3.5 h-3.5 rounded-sm inline-block shrink-0 shadow-sm"
+                style={{ backgroundColor: CHART_COLORS.grid001 }}
+              />
+              <span className="font-medium text-slate-200">0.01° grid (fine, ~1.1 km)</span>
+            </div>
           </div>
           <div className="mt-3 p-3 rounded bg-slate-900/60 border border-slate-800 flex items-start gap-2.5 text-xs text-amber-300/90">
             <Info size={16} className="shrink-0 mt-0.5" />
