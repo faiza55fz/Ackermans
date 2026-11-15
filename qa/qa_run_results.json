@@ -1,0 +1,176 @@
+{
+  "merged": {
+    "consoleLogs": [
+      {
+        "type": "debug",
+        "text": "[vite] connecting..."
+      },
+      {
+        "type": "debug",
+        "text": "[vite] connected."
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      }
+    ],
+    "networkErrors": [
+      {
+        "url": "http://localhost:8443/data/dashboard.json",
+        "status": 304
+      },
+      {
+        "url": "http://localhost:8443/data/map.json",
+        "status": 304
+      },
+      {
+        "url": "http://localhost:8443/data/harmonized_summary.json",
+        "status": 304
+      }
+    ],
+    "kpis": [
+      {
+        "label": "Total recorded detections",
+        "value": "1,33,605",
+        "note": "4,616 observation days"
+      },
+      {
+        "label": "Observation period",
+        "value": "2000–2026",
+        "note": "2000-11-11T05:41:00+00:00 to 2026-11-14T09:09:00+00:00"
+      },
+      {
+        "label": "Grid cells analysed",
+        "value": "92",
+        "note": "0.25° grid resolution"
+      },
+      {
+        "label": "Mean fire radiative power",
+        "value": "7.26 MW",
+        "note": "1,33,605 records with FRP"
+      }
+    ],
+    "sidebarNav": [
+      "Overview",
+      "Fire Explorer",
+      "Historical Calendar",
+      "Regional Comparison",
+      "Harmonized Activity",
+      "Anomaly Detection",
+      "Data Quality",
+      "Regional Comparison"
+    ],
+    "regionalComparisonContent": {
+      "pageIntroTitle": "Regional Comparison",
+      "pageIntroKicker": "Cross-sensor analysis",
+      "pageIntroText": "Compare observed MODIS and VIIRS detections with modeled VIIRS counts and calibrated FRP from the harmonization export.",
+      "cardTitles": [
+        "Observed and estimated detections",
+        "Observed and calibrated FRP"
+      ],
+      "hasTable": false,
+      "hasProcessGrid": false,
+      "hasMetricCharts": true
+    },
+    "sensorComparisonReachability": {
+      "hasSensorComparisonButton": false,
+      "navButtons": [
+        "Overview",
+        "Fire Explorer",
+        "Historical Calendar",
+        "Regional Comparison",
+        "Harmonized Activity",
+        "Anomaly Detection",
+        "Data Quality",
+        "Regional Comparison"
+      ]
+    },
+    "modulesVisited": {
+      "Fire Explorer": {
+        "title": "Fire Explorer",
+        "kicker": "Geospatial workspace"
+      },
+      "Historical Calendar": {
+        "title": "Fire Activity Calendar",
+        "kicker": "Historical archive"
+      },
+      "Harmonized Activity": {
+        "title": "Harmonized Fire Activity",
+        "kicker": "Core methodology"
+      },
+      "Anomaly Detection": {
+        "title": "Anomaly Detection",
+        "kicker": "Pattern intelligence"
+      },
+      "Data Quality": {
+        "title": "Data Quality",
+        "kicker": "Transparency & reliability"
+      }
+    }
+  },
+  "standalone": {
+    "consoleLogs": [
+      {
+        "type": "debug",
+        "text": "[vite] connecting..."
+      },
+      {
+        "type": "debug",
+        "text": "[vite] connected."
+      },
+      {
+        "type": "info",
+        "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+      }
+    ],
+    "networkErrors": [
+      {
+        "url": "http://localhost:8444/data/region_comparison.csv",
+        "status": 304
+      },
+      {
+        "url": "http://localhost:8444/data/yearly_trends.csv",
+        "status": 304
+      }
+    ],
+    "topbarText": "FireTrace / Regional ComparisonRegional ComparisonWestern United StatesCaliforniaPacific NorthwestGlobalJan 2000 — Aug 2024Last 12 months2024 only Data systems nominalFT",
+    "regionsTested": {
+      "palisades": {
+        "title": "Chart A: Unique Hotspot Cells by Sensor (0.05° Grid)",
+        "tableRows": 6
+      },
+      "western_ghats_karnataka": {
+        "title": "Chart A: Unique Hotspot Cells by Sensor (0.05° Grid)",
+        "tableRows": 6
+      },
+      "punjab_haryana": {
+        "title": "Chart A: Unique Hotspot Cells by Sensor (0.05° Grid)",
+        "tableRows": 6
+      }
+    },
+    "controlsTested": {
+      "toggles": [
+        "",
+        "Overview",
+        "Fire Explorer",
+        "Historical Calendar",
+        "Sensor Comparison",
+        "Harmonized Activity",
+        "Anomaly Detection",
+        "Data Quality",
+        "Regional Comparison",
+        "About FireTrace",
+        "Settings",
+        "Collapse sidebar",
+        "",
+        "FT",
+        "Linear Scale",
+        "Log10 Scale",
+        "0.05° grid (coarse, ~5.5 km)",
+        "0.01° grid (fine, ~1.1 km)",
+        "Linear Scale",
+        "Log10 Scale"
+      ]
+    }
+  }
+}
