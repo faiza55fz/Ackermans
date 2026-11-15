@@ -1,0 +1,7 @@
+region,cell_size,rows,modis_cells_2012_2026,viirs_cells_2012_2026,cells_seen_by_both,modis_cell_days,viirs_also,viirs_only,modis_only,share_modis_seen_by_viirs
+palisades,0.05,6083,23,27,22,66,55,262,11,83.33
+palisades,0.01,6083,228,361,210,332,260,579,72,78.31
+western_ghats_karnataka,0.05,133605,1171,1732,1168,8783,4352,59601,4431,49.55
+western_ghats_karnataka,0.01,133605,7000,22975,6376,11044,3240,77925,7804,29.34
+punjab_haryana,0.05,2732329,5708,6810,5656,202761,133329,783639,69432,65.76
+punjab_haryana,0.01,2732329,73350,120664,71539,285634,64748,1641821,220886,22.67

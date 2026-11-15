@@ -47,6 +47,7 @@ import {
   YAxis,
 } from "recharts";
 import { FireMap } from "./components/FireMap";
+import { RegionalComparison } from "./components/RegionalComparison";
 import { Card, ChartTooltip, DemoBadge, EmptyState, Status } from "./components/UI";
 import {
   calendarYears,
@@ -1587,6 +1588,19 @@ function Sidebar({
             </button>
           );
         })}
+        <button
+          className={(page as string) === "Regional Comparison" ? "active" : ""}
+          onClick={() => {
+            setPage("Regional Comparison" as PageName);
+            closeMobile();
+            window.scrollTo(0, 0);
+          }}
+          title={collapsed ? "Regional Comparison" : undefined}
+        >
+          <BarChart3 size={18} />
+          {!collapsed && <span>Regional Comparison</span>}
+          {(page as string) === "Regional Comparison" && <i />}
+        </button>
       </nav>
       <div className="sidebar-foot">
         <button>
@@ -1635,6 +1649,8 @@ export default function App() {
       <HarmonizedActivity filters={filters} />
     ) : page === "Anomaly Detection" ? (
       <AnomalyDetection filters={filters} onFiltersChange={setFilters} />
+    ) : (page as string) === "Regional Comparison" ? (
+      <RegionalComparison />
     ) : (
       <DataQuality filters={filters} />
     );
