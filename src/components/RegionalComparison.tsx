@@ -259,6 +259,51 @@ export function RegionalComparison() {
     });
   }, [yearlyData, selectedRegion, regionSensorBounds, isLogScale]);
 
+  // Round ticks for Chart C y-axis
+  const chartCYAxis = useMemo(() => {
+    const filtered = yearlyData.filter((r) => r.region === selectedRegion);
+    const maxVal = Math.max(0, ...filtered.map((r) => r.detections));
+
+    // Linear round ticks: 0, 1k, 2k, 3k, 4k or clean round values
+    let ticks: number[] = [0, 1000, 2000, 3000, 4000];
+    if (maxVal > 0) {
+      const exp = Math.floor(Math.log10(maxVal));
+      const fraction = maxVal / Math.pow(10, exp);
+      let step = Math.pow(10, exp);
+      if (fraction <= 1.2) {
+        step = 0.25 * Math.pow(10, exp);
+      } else if (fraction <= 2.5) {
+        step = 0.5 * Math.pow(10, exp);
+      } else if (fraction <= 5.0) {
+        step = 1.0 * Math.pow(10, exp);
+      } else {
+        step = 2.0 * Math.pow(10, exp);
+      }
+
+      ticks = [0];
+      let curr = step;
+      while (curr < maxVal + step * 0.99) {
+        ticks.push(Math.round(curr));
+        curr += step;
+      }
+    }
+
+    // Log ticks: powers of 10
+    const logTicks: number[] = [1];
+    let lCurr = 10;
+    while (lCurr <= Math.max(10, maxVal * 1.5)) {
+      logTicks.push(lCurr);
+      lCurr *= 10;
+    }
+
+    return {
+      ticks,
+      domain: [0, ticks[ticks.length - 1]],
+      logTicks,
+      logDomain: [1, logTicks[logTicks.length - 1]],
+    };
+  }, [yearlyData, selectedRegion]);
+
   // Custom marker renderer for Chart C (hollow circle for 2026 partial year)
   const renderDot = (color: string) => (props: any) => {
     const { cx, cy, payload } = props;
@@ -531,6 +576,20 @@ export function RegionalComparison() {
                   }}
                 />
                 <Legend
+                  payload={[
+                    {
+                      value: "0.05° Grid (Coarse ~5.5 km)",
+                      type: "rect",
+                      id: "0.05° Grid (Coarse)",
+                      color: CHART_COLORS.grid005,
+                    },
+                    {
+                      value: "0.01° Grid (Fine ~1.1 km)",
+                      type: "rect",
+                      id: "0.01° Grid (Fine)",
+                      color: CHART_COLORS.grid001,
+                    },
+                  ]}
                   wrapperStyle={{ paddingTop: "12px", fontSize: "12px" }}
                   formatter={(value) => <span className="text-slate-300">{value}</span>}
                 />
@@ -632,7 +691,8 @@ export function RegionalComparison() {
                 stroke={CHART_COLORS.textMuted}
                 tick={{ fill: CHART_COLORS.textMuted, fontSize: 11 }}
                 scale={isLogScale ? "log" : "auto"}
-                domain={isLogScale ? [1, "auto"] : [0, "auto"]}
+                domain={isLogScale ? chartCYAxis.logDomain : chartCYAxis.domain}
+                ticks={isLogScale ? chartCYAxis.logTicks : chartCYAxis.ticks}
                 tickFormatter={(val) => {
                   if (val === 0) return "0";
                   if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`;
@@ -723,6 +783,9 @@ export function RegionalComparison() {
               * 2026 hollow marker: partial calendar year
             </span>
           </div>
+          <p className="text-amber-300/90 text-xs">
+            2026 is a partial year (data to Nov 2026), so it shouldn't be compared with full years. A zero means no retained detections in the cleaned data, not necessarily no fire.
+          </p>
           {isLogScale && (
             <p className="text-amber-300/90 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded inline-block">
               <strong>Log Scale Note:</strong> Years with 0 detections cannot be represented on a logarithmic scale
