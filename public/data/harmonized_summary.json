@@ -1,0 +1,2927 @@
+{
+  "metadata": {
+    "region": "western_ghats_karnataka",
+    "input": "western_ghats_karnataka_combined.parquet",
+    "count_model": "negativebinomial",
+    "frp_method": "log_linear",
+    "note": "In-sample pipeline output; not independent validation.",
+    "created_at_utc": "2026-11-15T10:08:07.104686+00:00",
+    "format": "parquet",
+    "dataset": "harmonized_hotspots.parquet",
+    "n_rows": 51223,
+    "columns": [
+      "cell_id",
+      "date",
+      "n_detections_MODIS",
+      "fire_day_MODIS",
+      "mean_frp_MODIS",
+      "max_frp_MODIS",
+      "mean_scan_MODIS",
+      "night_fraction_MODIS",
+      "n_detections_VIIRS",
+      "fire_day_VIIRS",
+      "mean_frp_VIIRS",
+      "max_frp_VIIRS",
+      "mean_scan_VIIRS",
+      "night_fraction_VIIRS",
+      "overlap_valid",
+      "region",
+      "source",
+      "predicted_n_detections_VIIRS",
+      "calibrated_frp"
+    ]
+  },
+  "aggregated_metrics": {
+    "rows_by_source": {
+      "observed": 46540,
+      "estimated": 4683
+    },
+    "numeric_columns": {
+      "n_detections_MODIS": {
+        "count": 46540,
+        "mean": 0.38957885689729266,
+        "min": 0.0,
+        "max": 31.0
+      },
+      "fire_day_MODIS": {
+        "count": 46540,
+        "mean": 0.22492479587451655,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "mean_frp_MODIS": {
+        "count": 10468,
+        "mean": 16.78700909159826,
+        "min": 3.2,
+        "max": 253.86666666666667
+      },
+      "max_frp_MODIS": {
+        "count": 10468,
+        "mean": 20.217339510890334,
+        "min": 3.2,
+        "max": 414.7
+      },
+      "mean_scan_MODIS": {
+        "count": 10468,
+        "mean": 1.3182393246659485,
+        "min": 1.0,
+        "max": 4.8
+      },
+      "night_fraction_MODIS": {
+        "count": 10468,
+        "mean": 0.2028645365925278,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "n_detections_VIIRS": {
+        "count": 46540,
+        "mean": 2.481177481736141,
+        "min": 0.0,
+        "max": 141.0
+      },
+      "fire_day_VIIRS": {
+        "count": 46540,
+        "mean": 0.8756983240223464,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "mean_frp_VIIRS": {
+        "count": 40755,
+        "mean": 4.808531423543496,
+        "min": 0.13,
+        "max": 136.95
+      },
+      "max_frp_VIIRS": {
+        "count": 40755,
+        "mean": 6.490152128573182,
+        "min": 0.13,
+        "max": 225.15
+      },
+      "mean_scan_VIIRS": {
+        "count": 40755,
+        "mean": 0.4491459287478956,
+        "min": 0.32,
+        "max": 0.8
+      },
+      "night_fraction_VIIRS": {
+        "count": 40755,
+        "mean": 0.21961018692811168,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "predicted_n_detections_VIIRS": {
+        "count": 4683,
+        "mean": 7.029143548251043,
+        "min": 1.028405297737962,
+        "max": 62.990014086350406
+      },
+      "calibrated_frp": {
+        "count": 4683,
+        "mean": 5.116420853697509,
+        "min": 2.2640280350802287,
+        "max": 15.722150278129922
+      }
+    },
+    "numeric_columns_by_source": {
+      "observed": {
+        "n_detections_MODIS": {
+          "count": 46540,
+          "mean": 0.38957885689729266,
+          "min": 0.0,
+          "max": 31.0
+        },
+        "fire_day_MODIS": {
+          "count": 46540,
+          "mean": 0.22492479587451655,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "mean_frp_MODIS": {
+          "count": 10468,
+          "mean": 16.78700909159826,
+          "min": 3.2,
+          "max": 253.86666666666667
+        },
+        "max_frp_MODIS": {
+          "count": 10468,
+          "mean": 20.217339510890334,
+          "min": 3.2,
+          "max": 414.7
+        },
+        "mean_scan_MODIS": {
+          "count": 10468,
+          "mean": 1.3182393246659485,
+          "min": 1.0,
+          "max": 4.8
+        },
+        "night_fraction_MODIS": {
+          "count": 10468,
+          "mean": 0.2028645365925278,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "n_detections_VIIRS": {
+          "count": 46540,
+          "mean": 2.481177481736141,
+          "min": 0.0,
+          "max": 141.0
+        },
+        "fire_day_VIIRS": {
+          "count": 46540,
+          "mean": 0.8756983240223464,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "mean_frp_VIIRS": {
+          "count": 40755,
+          "mean": 4.808531423543496,
+          "min": 0.13,
+          "max": 136.95
+        },
+        "max_frp_VIIRS": {
+          "count": 40755,
+          "mean": 6.490152128573182,
+          "min": 0.13,
+          "max": 225.15
+        },
+        "mean_scan_VIIRS": {
+          "count": 40755,
+          "mean": 0.4491459287478956,
+          "min": 0.32,
+          "max": 0.8
+        },
+        "night_fraction_VIIRS": {
+          "count": 40755,
+          "mean": 0.21961018692811168,
+          "min": 0.0,
+          "max": 1.0
+        },
+        "predicted_n_detections_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "calibrated_frp": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        }
+      },
+      "estimated": {
+        "n_detections_MODIS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "fire_day_MODIS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "mean_frp_MODIS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_frp_MODIS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "mean_scan_MODIS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "night_fraction_MODIS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "n_detections_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "fire_day_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "mean_frp_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "max_frp_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "mean_scan_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "night_fraction_VIIRS": {
+          "count": 0,
+          "mean": 0.0,
+          "min": 0.0,
+          "max": 0.0
+        },
+        "predicted_n_detections_VIIRS": {
+          "count": 4683,
+          "mean": 7.029143548251043,
+          "min": 1.028405297737962,
+          "max": 62.990014086350406
+        },
+        "calibrated_frp": {
+          "count": 4683,
+          "mean": 5.116420853697509,
+          "min": 2.2640280350802287,
+          "max": 15.722150278129922
+        }
+      }
+    },
+    "provided": {
+      "timeseries": {
+        "yearly": [
+          {
+            "period": "2000",
+            "observed_modis_detections": 28.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.709090909090909,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001",
+            "observed_modis_detections": 199.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.482006369426752,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002",
+            "observed_modis_detections": 182.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 12.960012722646312,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003",
+            "observed_modis_detections": 484.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 16.859872965241387,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004",
+            "observed_modis_detections": 1124.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 20.468814970014066,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005",
+            "observed_modis_detections": 730.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.425901604167837,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006",
+            "observed_modis_detections": 784.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.398632011807276,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007",
+            "observed_modis_detections": 600.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.488529166666668,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008",
+            "observed_modis_detections": 607.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.762707204700062,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009",
+            "observed_modis_detections": 605.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 16.86250307184398,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010",
+            "observed_modis_detections": 371.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.609525907279213,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011",
+            "observed_modis_detections": 1002.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.059685959825238,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2012",
+            "observed_modis_detections": 1083.0,
+            "observed_viirs_detections": 5546.0,
+            "observed_modis_frp": 19.295015107293754,
+            "observed_viirs_frp": 4.996345062867589,
+            "estimated_viirs_detections": 2782.8567792405784,
+            "estimated_calibrated_frp": 5.594026928795998
+          },
+          {
+            "period": "2013",
+            "observed_modis_detections": 801.0,
+            "observed_viirs_detections": 6025.0,
+            "observed_modis_frp": 17.38564160875835,
+            "observed_viirs_frp": 5.034224150030904,
+            "estimated_viirs_detections": 2250.442864161035,
+            "estimated_calibrated_frp": 5.360254748391419
+          },
+          {
+            "period": "2014",
+            "observed_modis_detections": 668.0,
+            "observed_viirs_detections": 4708.0,
+            "observed_modis_frp": 17.29480342871874,
+            "observed_viirs_frp": 5.239360166838868,
+            "estimated_viirs_detections": 2042.2966605731522,
+            "estimated_calibrated_frp": 5.550481344262948
+          },
+          {
+            "period": "2015",
+            "observed_modis_detections": 600.0,
+            "observed_viirs_detections": 4081.0,
+            "observed_modis_frp": 14.781864111498258,
+            "observed_viirs_frp": 4.407283784635228,
+            "estimated_viirs_detections": 1359.3304663997174,
+            "estimated_calibrated_frp": 4.762401351292416
+          },
+          {
+            "period": "2016",
+            "observed_modis_detections": 1044.0,
+            "observed_viirs_detections": 7761.0,
+            "observed_modis_frp": 17.11432150001299,
+            "observed_viirs_frp": 5.021788852542474,
+            "estimated_viirs_detections": 3050.325298960944,
+            "estimated_calibrated_frp": 5.2340846531363105
+          },
+          {
+            "period": "2017",
+            "observed_modis_detections": 1027.0,
+            "observed_viirs_detections": 7066.0,
+            "observed_modis_frp": 18.59101418300869,
+            "observed_viirs_frp": 4.984697263466824,
+            "estimated_viirs_detections": 3052.447157213789,
+            "estimated_calibrated_frp": 5.328490942867045
+          },
+          {
+            "period": "2018",
+            "observed_modis_detections": 1109.0,
+            "observed_viirs_detections": 6911.0,
+            "observed_modis_frp": 17.983704317011473,
+            "observed_viirs_frp": 4.91117292015335,
+            "estimated_viirs_detections": 3123.0585492010578,
+            "estimated_calibrated_frp": 5.285427426363513
+          },
+          {
+            "period": "2019",
+            "observed_modis_detections": 757.0,
+            "observed_viirs_detections": 9408.0,
+            "observed_modis_frp": 18.125323839791168,
+            "observed_viirs_frp": 4.9965200001390375,
+            "estimated_viirs_detections": 2326.891235438885,
+            "estimated_calibrated_frp": 5.300597123897554
+          },
+          {
+            "period": "2020",
+            "observed_modis_detections": 479.0,
+            "observed_viirs_detections": 5803.0,
+            "observed_modis_frp": 16.024687800192122,
+            "observed_viirs_frp": 4.832941678084213,
+            "estimated_viirs_detections": 1301.757989290891,
+            "estimated_calibrated_frp": 5.072938678969477
+          },
+          {
+            "period": "2021",
+            "observed_modis_detections": 401.0,
+            "observed_viirs_detections": 5117.0,
+            "observed_modis_frp": 14.707592272202998,
+            "observed_viirs_frp": 4.563022191743951,
+            "estimated_viirs_detections": 1240.1150167966973,
+            "estimated_calibrated_frp": 4.832272267738588
+          },
+          {
+            "period": "2022",
+            "observed_modis_detections": 608.0,
+            "observed_viirs_detections": 5988.0,
+            "observed_modis_frp": 14.217126188582036,
+            "observed_viirs_frp": 4.236174704337259,
+            "estimated_viirs_detections": 1791.1476154782001,
+            "estimated_calibrated_frp": 4.790901845016845
+          },
+          {
+            "period": "2023",
+            "observed_modis_detections": 1278.0,
+            "observed_viirs_detections": 20282.0,
+            "observed_modis_frp": 15.3417966219514,
+            "observed_viirs_frp": 4.66584992823778,
+            "estimated_viirs_detections": 4450.283097407812,
+            "estimated_calibrated_frp": 5.030976796198376
+          },
+          {
+            "period": "2024",
+            "observed_modis_detections": 438.0,
+            "observed_viirs_detections": 8243.0,
+            "observed_modis_frp": 14.803868852459017,
+            "observed_viirs_frp": 4.872163382237189,
+            "estimated_viirs_detections": 1189.1828495862403,
+            "estimated_calibrated_frp": 4.904437034524356
+          },
+          {
+            "period": "2025",
+            "observed_modis_detections": 649.0,
+            "observed_viirs_detections": 9884.0,
+            "observed_modis_frp": 14.42160377846791,
+            "observed_viirs_frp": 4.695738997902026,
+            "estimated_viirs_detections": 1709.676661947367,
+            "estimated_calibrated_frp": 4.725486472421684
+          },
+          {
+            "period": "2026",
+            "observed_modis_detections": 473.0,
+            "observed_viirs_detections": 8651.0,
+            "observed_modis_frp": 12.573639162561577,
+            "observed_viirs_frp": 4.857022524872288,
+            "estimated_viirs_detections": 1247.6669947632665,
+            "estimated_calibrated_frp": 4.518474522450227
+          }
+        ],
+        "monthly": [
+          {
+            "period": "2000-11",
+            "observed_modis_detections": 6.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 9.790000000000001,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2000-12",
+            "observed_modis_detections": 22.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.979411764705883,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-01",
+            "observed_modis_detections": 41.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.122549019607844,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-02",
+            "observed_modis_detections": 46.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.5760101010101,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-03",
+            "observed_modis_detections": 63.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.1265306122449,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-04",
+            "observed_modis_detections": 13.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.71,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-05",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.2,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-10",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.325,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-11",
+            "observed_modis_detections": 10.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.19375,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2001-12",
+            "observed_modis_detections": 20.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.879411764705882,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-01",
+            "observed_modis_detections": 40.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.665,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-02",
+            "observed_modis_detections": 74.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.985204081632652,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-03",
+            "observed_modis_detections": 18.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.126666666666667,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-04",
+            "observed_modis_detections": 6.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.51,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-05",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 33.3,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-07",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.1,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-09",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 6.966666666666666,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-10",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 31.849999999999998,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-11",
+            "observed_modis_detections": 7.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.471428571428572,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2002-12",
+            "observed_modis_detections": 29.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.543703703703706,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-01",
+            "observed_modis_detections": 86.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.859972677595628,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-02",
+            "observed_modis_detections": 122.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.83669610855095,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-03",
+            "observed_modis_detections": 163.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.40683712121212,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-04",
+            "observed_modis_detections": 16.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 20.001923076923074,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-05",
+            "observed_modis_detections": 9.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.9375,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-06",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 20.466666666666665,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-07",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 16.7,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-10",
+            "observed_modis_detections": 5.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 21.26666666666667,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-11",
+            "observed_modis_detections": 11.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.277777777777779,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2003-12",
+            "observed_modis_detections": 68.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.067907801418439,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-01",
+            "observed_modis_detections": 105.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.024019607843137,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-02",
+            "observed_modis_detections": 337.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 21.582612452651514,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-03",
+            "observed_modis_detections": 498.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 26.349311354124186,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-04",
+            "observed_modis_detections": 23.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.030833333333334,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-05",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.9,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-10",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.575,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-11",
+            "observed_modis_detections": 12.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.309999999999999,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2004-12",
+            "observed_modis_detections": 144.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.282976668579078,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-01",
+            "observed_modis_detections": 111.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.94733830845771,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-02",
+            "observed_modis_detections": 306.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.09613514345132,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-03",
+            "observed_modis_detections": 223.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 22.9133559622196,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-04",
+            "observed_modis_detections": 23.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.984444444444442,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-05",
+            "observed_modis_detections": 9.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 25.935714285714287,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-06",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 21.983333333333334,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-11",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 8.233333333333333,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2005-12",
+            "observed_modis_detections": 51.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.05888888888889,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-01",
+            "observed_modis_detections": 223.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.655962219598585,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-02",
+            "observed_modis_detections": 266.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.828811751973515,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-03",
+            "observed_modis_detections": 121.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 16.891860670194006,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-04",
+            "observed_modis_detections": 90.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.249081920903954,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-05",
+            "observed_modis_detections": 12.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 43.61071428571428,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-06",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 22.2,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-11",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.475,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2006-12",
+            "observed_modis_detections": 67.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.67843137254902,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-01",
+            "observed_modis_detections": 150.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.398150000000001,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-02",
+            "observed_modis_detections": 182.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.999433656957928,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-03",
+            "observed_modis_detections": 143.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 16.224183333333333,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-04",
+            "observed_modis_detections": 53.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.49923076923077,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-05",
+            "observed_modis_detections": 16.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 26.53846153846154,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-06",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 9.725,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-10",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 3.8,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-11",
+            "observed_modis_detections": 16.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.225,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2007-12",
+            "observed_modis_detections": 36.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 9.120238095238095,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-01",
+            "observed_modis_detections": 165.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.346458333333333,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-02",
+            "observed_modis_detections": 117.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.5604,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-03",
+            "observed_modis_detections": 216.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.641041924345497,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-04",
+            "observed_modis_detections": 17.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 22.97307692307692,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-05",
+            "observed_modis_detections": 20.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.75,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-09",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 21.8,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-10",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 8.2,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-11",
+            "observed_modis_detections": 7.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.171428571428573,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2008-12",
+            "observed_modis_detections": 63.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 12.765873015873016,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-01",
+            "observed_modis_detections": 161.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.25454128440367,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-02",
+            "observed_modis_detections": 186.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.47057471264368,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-03",
+            "observed_modis_detections": 216.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 19.136072257322258,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-04",
+            "observed_modis_detections": 11.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.820833333333333,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-05",
+            "observed_modis_detections": 14.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 22.390625,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-10",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 8.533333333333333,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-11",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 5.8,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2009-12",
+            "observed_modis_detections": 10.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.091666666666667,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-01",
+            "observed_modis_detections": 53.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 16.652439024390244,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-02",
+            "observed_modis_detections": 84.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 15.288027777777778,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-03",
+            "observed_modis_detections": 170.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 18.633462421113023,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-04",
+            "observed_modis_detections": 50.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 24.69344444444444,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-05",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.85,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 3.2,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-11",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 7.5,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2010-12",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 8.3375,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-01",
+            "observed_modis_detections": 108.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 14.989119047619047,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-02",
+            "observed_modis_detections": 196.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 17.47204301075269,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-03",
+            "observed_modis_detections": 497.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 20.898538300893932,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-04",
+            "observed_modis_detections": 133.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 25.481226551226552,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-05",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 10.175,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-11",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 11.321428571428571,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2011-12",
+            "observed_modis_detections": 56.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 13.257364341085273,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2012-01",
+            "observed_modis_detections": 126.0,
+            "observed_viirs_detections": 381.0,
+            "observed_modis_frp": 16.010263157894737,
+            "observed_viirs_frp": 4.525895739159552,
+            "estimated_viirs_detections": 126.2424317030201,
+            "estimated_calibrated_frp": 4.892691361480671
+          },
+          {
+            "period": "2012-02",
+            "observed_modis_detections": 446.0,
+            "observed_viirs_detections": 2466.0,
+            "observed_modis_frp": 24.768610733010686,
+            "observed_viirs_frp": 5.200292224205208,
+            "estimated_viirs_detections": 1380.5995387988326,
+            "estimated_calibrated_frp": 5.579090041730421
+          },
+          {
+            "period": "2012-03",
+            "observed_modis_detections": 408.0,
+            "observed_viirs_detections": 1820.0,
+            "observed_modis_frp": 19.94360128987322,
+            "observed_viirs_frp": 5.697119457619905,
+            "estimated_viirs_detections": 1159.4355439829776,
+            "estimated_calibrated_frp": 6.039862608097518
+          },
+          {
+            "period": "2012-04",
+            "observed_modis_detections": 19.0,
+            "observed_viirs_detections": 326.0,
+            "observed_modis_frp": 17.703333333333333,
+            "observed_viirs_frp": 5.591383076992452,
+            "estimated_viirs_detections": 41.096736469679286,
+            "estimated_calibrated_frp": 7.162729623626204
+          },
+          {
+            "period": "2012-05",
+            "observed_modis_detections": 5.0,
+            "observed_viirs_detections": 116.0,
+            "observed_modis_frp": 14.3,
+            "observed_viirs_frp": 5.124178294573643,
+            "estimated_viirs_detections": 4.9844329329679375,
+            "estimated_calibrated_frp": 5.984275332221161
+          },
+          {
+            "period": "2012-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 35.0,
+            "observed_modis_frp": 3.4,
+            "observed_viirs_frp": 3.6232758620689656,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2012-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 5.41,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2012-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 3.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.686666666666667,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2012-09",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 6.0,
+            "observed_modis_frp": 15.7,
+            "observed_viirs_frp": 8.343333333333334,
+            "estimated_viirs_detections": 1.0743596377279034,
+            "estimated_calibrated_frp": 5.095512051062035
+          },
+          {
+            "period": "2012-10",
+            "observed_modis_detections": 5.0,
+            "observed_viirs_detections": 39.0,
+            "observed_modis_frp": 5.720000000000001,
+            "observed_viirs_frp": 2.264222222222222,
+            "estimated_viirs_detections": 4.390571720756453,
+            "estimated_calibrated_frp": 2.6303215407919245
+          },
+          {
+            "period": "2012-11",
+            "observed_modis_detections": 15.0,
+            "observed_viirs_detections": 63.0,
+            "observed_modis_frp": 9.196153846153846,
+            "observed_viirs_frp": 2.8633035714285713,
+            "estimated_viirs_detections": 3.3594330263944623,
+            "estimated_calibrated_frp": 3.102698458935386
+          },
+          {
+            "period": "2012-12",
+            "observed_modis_detections": 57.0,
+            "observed_viirs_detections": 290.0,
+            "observed_modis_frp": 11.6865873015873,
+            "observed_viirs_frp": 3.3593882978723406,
+            "estimated_viirs_detections": 61.67373096822218,
+            "estimated_calibrated_frp": 4.121150424695833
+          },
+          {
+            "period": "2013-01",
+            "observed_modis_detections": 150.0,
+            "observed_viirs_detections": 837.0,
+            "observed_modis_frp": 13.912586805555556,
+            "observed_viirs_frp": 4.175453853203853,
+            "estimated_viirs_detections": 295.95179214977145,
+            "estimated_calibrated_frp": 4.570044996258124
+          },
+          {
+            "period": "2013-02",
+            "observed_modis_detections": 156.0,
+            "observed_viirs_detections": 831.0,
+            "observed_modis_frp": 16.106962365591396,
+            "observed_viirs_frp": 5.09145136190554,
+            "estimated_viirs_detections": 437.03688002389833,
+            "estimated_calibrated_frp": 4.859744007018311
+          },
+          {
+            "period": "2013-03",
+            "observed_modis_detections": 269.0,
+            "observed_viirs_detections": 2441.0,
+            "observed_modis_frp": 20.358502616002617,
+            "observed_viirs_frp": 5.392722908859569,
+            "estimated_viirs_detections": 1082.7039155341529,
+            "estimated_calibrated_frp": 6.123025812422657
+          },
+          {
+            "period": "2013-04",
+            "observed_modis_detections": 85.0,
+            "observed_viirs_detections": 1118.0,
+            "observed_modis_frp": 23.080258620689655,
+            "observed_viirs_frp": 6.159568360863447,
+            "estimated_viirs_detections": 248.99594015557398,
+            "estimated_calibrated_frp": 7.290559506940568
+          },
+          {
+            "period": "2013-05",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 110.0,
+            "observed_modis_frp": 34.175000000000004,
+            "observed_viirs_frp": 5.472399122807017,
+            "estimated_viirs_detections": 4.949236538137155,
+            "estimated_calibrated_frp": 6.4884024437005525
+          },
+          {
+            "period": "2013-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 3.0,
+            "observed_modis_frp": 7.7,
+            "observed_viirs_frp": 2.12,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2013-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.43,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2013-10",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 7.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 3.255714285714286,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2013-11",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 67.0,
+            "observed_modis_frp": 8.7625,
+            "observed_viirs_frp": 3.417210884353741,
+            "estimated_viirs_detections": 5.29161737026858,
+            "estimated_calibrated_frp": 3.0455555143234876
+          },
+          {
+            "period": "2013-12",
+            "observed_modis_detections": 124.0,
+            "observed_viirs_detections": 610.0,
+            "observed_modis_frp": 14.546008230452674,
+            "observed_viirs_frp": 4.436008991694177,
+            "estimated_viirs_detections": 175.51348238923245,
+            "estimated_calibrated_frp": 4.167851902719952
+          },
+          {
+            "period": "2014-01",
+            "observed_modis_detections": 156.0,
+            "observed_viirs_detections": 893.0,
+            "observed_modis_frp": 16.45878787878788,
+            "observed_viirs_frp": 4.80202828099839,
+            "estimated_viirs_detections": 339.8908099496116,
+            "estimated_calibrated_frp": 4.977927463688788
+          },
+          {
+            "period": "2014-02",
+            "observed_modis_detections": 137.0,
+            "observed_viirs_detections": 864.0,
+            "observed_modis_frp": 14.940243055555555,
+            "observed_viirs_frp": 5.002653555404743,
+            "estimated_viirs_detections": 435.49929255975235,
+            "estimated_calibrated_frp": 4.731957580147087
+          },
+          {
+            "period": "2014-03",
+            "observed_modis_detections": 260.0,
+            "observed_viirs_detections": 1907.0,
+            "observed_modis_frp": 19.522924718196457,
+            "observed_viirs_frp": 6.214842719925178,
+            "estimated_viirs_detections": 1037.656594481054,
+            "estimated_calibrated_frp": 6.0451194327857225
+          },
+          {
+            "period": "2014-04",
+            "observed_modis_detections": 60.0,
+            "observed_viirs_detections": 682.0,
+            "observed_modis_frp": 20.08294573643411,
+            "observed_viirs_frp": 5.580885664222398,
+            "estimated_viirs_detections": 173.82281711430505,
+            "estimated_calibrated_frp": 6.762016172876392
+          },
+          {
+            "period": "2014-05",
+            "observed_modis_detections": 15.0,
+            "observed_viirs_detections": 70.0,
+            "observed_modis_frp": 28.879999999999995,
+            "observed_viirs_frp": 7.907294326241135,
+            "estimated_viirs_detections": 41.4745582552275,
+            "estimated_calibrated_frp": 7.105000197731692
+          },
+          {
+            "period": "2014-06",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 19.0,
+            "observed_modis_frp": 16.466666666666665,
+            "observed_viirs_frp": 4.47,
+            "estimated_viirs_detections": 5.200061270234592,
+            "estimated_calibrated_frp": 5.692423953025305
+          },
+          {
+            "period": "2014-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 5.92,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2014-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 0.58,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2014-09",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 4.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 0.9199999999999999,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2014-10",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 14.0,
+            "observed_modis_frp": 8.083333333333334,
+            "observed_viirs_frp": 1.00125,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2014-11",
+            "observed_modis_detections": 15.0,
+            "observed_viirs_detections": 83.0,
+            "observed_modis_frp": 9.995454545454546,
+            "observed_viirs_frp": 2.132051282051282,
+            "estimated_viirs_detections": 1.7921104475427048,
+            "estimated_calibrated_frp": 3.7346624841543625
+          },
+          {
+            "period": "2014-12",
+            "observed_modis_detections": 18.0,
+            "observed_viirs_detections": 170.0,
+            "observed_modis_frp": 10.541176470588235,
+            "observed_viirs_frp": 3.0290416666666666,
+            "estimated_viirs_detections": 6.960416495424225,
+            "estimated_calibrated_frp": 4.611806938919092
+          },
+          {
+            "period": "2015-01",
+            "observed_modis_detections": 117.0,
+            "observed_viirs_detections": 589.0,
+            "observed_modis_frp": 13.296341463414633,
+            "observed_viirs_frp": 3.8800475694444443,
+            "estimated_viirs_detections": 179.58834993867296,
+            "estimated_calibrated_frp": 4.463895283444773
+          },
+          {
+            "period": "2015-02",
+            "observed_modis_detections": 225.0,
+            "observed_viirs_detections": 1328.0,
+            "observed_modis_frp": 17.265382293762574,
+            "observed_viirs_frp": 4.76386892990284,
+            "estimated_viirs_detections": 682.5513330953917,
+            "estimated_calibrated_frp": 4.679480448664742
+          },
+          {
+            "period": "2015-03",
+            "observed_modis_detections": 93.0,
+            "observed_viirs_detections": 850.0,
+            "observed_modis_frp": 14.462910798122063,
+            "observed_viirs_frp": 4.7007600359118005,
+            "estimated_viirs_detections": 315.1786128497491,
+            "estimated_calibrated_frp": 5.234956806804767
+          },
+          {
+            "period": "2015-04",
+            "observed_modis_detections": 45.0,
+            "observed_viirs_detections": 738.0,
+            "observed_modis_frp": 12.138383838383838,
+            "observed_viirs_frp": 5.080743039137835,
+            "estimated_viirs_detections": 91.74531232655193,
+            "estimated_calibrated_frp": 5.57545953715354
+          },
+          {
+            "period": "2015-05",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 48.0,
+            "observed_modis_frp": 15.25,
+            "observed_viirs_frp": 3.823062015503876,
+            "estimated_viirs_detections": 4.553503059628209,
+            "estimated_calibrated_frp": 6.476081679329196
+          },
+          {
+            "period": "2015-06",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 8.0,
+            "observed_modis_frp": 11.85,
+            "observed_viirs_frp": 1.967142857142857,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2015-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 2.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.335,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2015-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 3.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 3.4466666666666668,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2015-09",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 5.0,
+            "observed_modis_frp": 21.5,
+            "observed_viirs_frp": 2.9400000000000004,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2015-10",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 33.0,
+            "observed_modis_frp": 11.3,
+            "observed_viirs_frp": 2.0973809523809526,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2015-11",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 64.0,
+            "observed_modis_frp": 8.02142857142857,
+            "observed_viirs_frp": 2.3412,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2015-12",
+            "observed_modis_detections": 104.0,
+            "observed_viirs_detections": 413.0,
+            "observed_modis_frp": 13.693980099502488,
+            "observed_viirs_frp": 3.693732914923291,
+            "estimated_viirs_detections": 85.71335512972344,
+            "estimated_calibrated_frp": 4.079613926107225
+          },
+          {
+            "period": "2016-01",
+            "observed_modis_detections": 245.0,
+            "observed_viirs_detections": 1326.0,
+            "observed_modis_frp": 15.502324263038549,
+            "observed_viirs_frp": 4.621656565710449,
+            "estimated_viirs_detections": 562.6810484616404,
+            "estimated_calibrated_frp": 4.742082753912908
+          },
+          {
+            "period": "2016-02",
+            "observed_modis_detections": 189.0,
+            "observed_viirs_detections": 1526.0,
+            "observed_modis_frp": 14.242054390563565,
+            "observed_viirs_frp": 4.49109304602871,
+            "estimated_viirs_detections": 517.0983987917725,
+            "estimated_calibrated_frp": 4.562658424608301
+          },
+          {
+            "period": "2016-03",
+            "observed_modis_detections": 418.0,
+            "observed_viirs_detections": 2895.0,
+            "observed_modis_frp": 20.496920400344045,
+            "observed_viirs_frp": 6.105936617602191,
+            "estimated_viirs_detections": 1688.7892897021518,
+            "estimated_calibrated_frp": 6.067460194700845
+          },
+          {
+            "period": "2016-04",
+            "observed_modis_detections": 61.0,
+            "observed_viirs_detections": 993.0,
+            "observed_modis_frp": 23.280740740740743,
+            "observed_viirs_frp": 5.655280930937,
+            "estimated_viirs_detections": 118.83238664800355,
+            "estimated_calibrated_frp": 6.932992024311236
+          },
+          {
+            "period": "2016-05",
+            "observed_modis_detections": 24.0,
+            "observed_viirs_detections": 291.0,
+            "observed_modis_frp": 15.768518518518517,
+            "observed_viirs_frp": 5.211861261261261,
+            "estimated_viirs_detections": 37.06371581660018,
+            "estimated_calibrated_frp": 5.874998499967753
+          },
+          {
+            "period": "2016-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 37.0,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2016-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 1.04,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2016-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 1.17,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2016-09",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 7.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 1.19625,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2016-10",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 47.0,
+            "observed_modis_frp": 11.733333333333334,
+            "observed_viirs_frp": 3.3552631578947367,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2016-11",
+            "observed_modis_detections": 24.0,
+            "observed_viirs_detections": 207.0,
+            "observed_modis_frp": 12.99047619047619,
+            "observed_viirs_frp": 3.4274649859943978,
+            "estimated_viirs_detections": 17.65547015268183,
+            "estimated_calibrated_frp": 4.054196409129091
+          },
+          {
+            "period": "2016-12",
+            "observed_modis_detections": 79.0,
+            "observed_viirs_detections": 467.0,
+            "observed_modis_frp": 12.316927083333333,
+            "observed_viirs_frp": 3.9547122057001234,
+            "estimated_viirs_detections": 108.20498938809384,
+            "estimated_calibrated_frp": 3.7583062464982473
+          },
+          {
+            "period": "2017-01",
+            "observed_modis_detections": 154.0,
+            "observed_viirs_detections": 977.0,
+            "observed_modis_frp": 15.764909420289856,
+            "observed_viirs_frp": 3.980529276088773,
+            "estimated_viirs_detections": 327.8258520963159,
+            "estimated_calibrated_frp": 4.8121491801906915
+          },
+          {
+            "period": "2017-02",
+            "observed_modis_detections": 500.0,
+            "observed_viirs_detections": 3163.0,
+            "observed_modis_frp": 20.682298412182135,
+            "observed_viirs_frp": 5.339970399217217,
+            "estimated_viirs_detections": 1484.2045700514186,
+            "estimated_calibrated_frp": 5.241434841298049
+          },
+          {
+            "period": "2017-03",
+            "observed_modis_detections": 273.0,
+            "observed_viirs_detections": 2035.0,
+            "observed_modis_frp": 20.719748924988057,
+            "observed_viirs_frp": 6.243053504178293,
+            "estimated_viirs_detections": 1087.0567925818211,
+            "estimated_calibrated_frp": 6.104823305675506
+          },
+          {
+            "period": "2017-04",
+            "observed_modis_detections": 20.0,
+            "observed_viirs_detections": 322.0,
+            "observed_modis_frp": 16.935333333333332,
+            "observed_viirs_frp": 5.898714177978883,
+            "estimated_viirs_detections": 35.82011521552164,
+            "estimated_calibrated_frp": 6.174294732821917
+          },
+          {
+            "period": "2017-05",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 89.0,
+            "observed_modis_frp": 39.03,
+            "observed_viirs_frp": 5.1077941176470585,
+            "estimated_viirs_detections": 17.60955299262102,
+            "estimated_calibrated_frp": 9.519510745064174
+          },
+          {
+            "period": "2017-06",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 6.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 3.723333333333333,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2017-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 0.82,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2017-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 3.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 0.8500000000000001,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2017-09",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 0.54,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2017-10",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 10.0,
+            "observed_modis_frp": 5.3,
+            "observed_viirs_frp": 1.605,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2017-11",
+            "observed_modis_detections": 9.0,
+            "observed_viirs_detections": 76.0,
+            "observed_modis_frp": 8.192857142857141,
+            "observed_viirs_frp": 2.032295081967213,
+            "estimated_viirs_detections": 2.534712005567369,
+            "estimated_calibrated_frp": 3.7434985352745005
+          },
+          {
+            "period": "2017-12",
+            "observed_modis_detections": 62.0,
+            "observed_viirs_detections": 383.0,
+            "observed_modis_frp": 11.595486111111112,
+            "observed_viirs_frp": 3.3023394964180364,
+            "estimated_viirs_detections": 97.39556227052329,
+            "estimated_calibrated_frp": 3.903462991089269
+          },
+          {
+            "period": "2018-01",
+            "observed_modis_detections": 196.0,
+            "observed_viirs_detections": 877.0,
+            "observed_modis_frp": 14.186367467340919,
+            "observed_viirs_frp": 4.069952331840327,
+            "estimated_viirs_detections": 346.23076954608075,
+            "estimated_calibrated_frp": 4.688158152459366
+          },
+          {
+            "period": "2018-02",
+            "observed_modis_detections": 488.0,
+            "observed_viirs_detections": 2439.0,
+            "observed_modis_frp": 19.258762144588474,
+            "observed_viirs_frp": 5.2545297482917945,
+            "estimated_viirs_detections": 1445.1300059734658,
+            "estimated_calibrated_frp": 5.133668996383551
+          },
+          {
+            "period": "2018-03",
+            "observed_modis_detections": 272.0,
+            "observed_viirs_detections": 1629.0,
+            "observed_modis_frp": 20.639332707607046,
+            "observed_viirs_frp": 6.411790243549437,
+            "estimated_viirs_detections": 1077.946179995263,
+            "estimated_calibrated_frp": 6.0892270184819814
+          },
+          {
+            "period": "2018-04",
+            "observed_modis_detections": 32.0,
+            "observed_viirs_detections": 804.0,
+            "observed_modis_frp": 27.393827160493828,
+            "observed_viirs_frp": 5.537832127619341,
+            "estimated_viirs_detections": 109.00512674968678,
+            "estimated_calibrated_frp": 7.1449564925958615
+          },
+          {
+            "period": "2018-05",
+            "observed_modis_detections": 7.0,
+            "observed_viirs_detections": 138.0,
+            "observed_modis_frp": 17.916666666666668,
+            "observed_viirs_frp": 5.404981884057971,
+            "estimated_viirs_detections": 8.451307595915777,
+            "estimated_calibrated_frp": 6.537778645328754
+          },
+          {
+            "period": "2018-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 16.0,
+            "observed_modis_frp": 13.6,
+            "observed_viirs_frp": 8.365238095238094,
+            "estimated_viirs_detections": 1.8912228825417083,
+            "estimated_calibrated_frp": 6.827055583986271
+          },
+          {
+            "period": "2018-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 1.15,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2018-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 3.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 0.8033333333333333,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2018-09",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 72.0,
+            "observed_modis_frp": 8.2,
+            "observed_viirs_frp": 2.5327207207207207,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2018-10",
+            "observed_modis_detections": 10.0,
+            "observed_viirs_detections": 113.0,
+            "observed_modis_frp": 12.278571428571428,
+            "observed_viirs_frp": 2.2581709956709957,
+            "estimated_viirs_detections": 2.0296218930173997,
+            "estimated_calibrated_frp": 3.2517666244246413
+          },
+          {
+            "period": "2018-11",
+            "observed_modis_detections": 24.0,
+            "observed_viirs_detections": 231.0,
+            "observed_modis_frp": 15.859803921568627,
+            "observed_viirs_frp": 2.9340140120415983,
+            "estimated_viirs_detections": 20.17418397989257,
+            "estimated_calibrated_frp": 3.9298220079838564
+          },
+          {
+            "period": "2018-12",
+            "observed_modis_detections": 78.0,
+            "observed_viirs_detections": 588.0,
+            "observed_modis_frp": 12.883068783068783,
+            "observed_viirs_frp": 3.8052565686908246,
+            "estimated_viirs_detections": 112.20013058519397,
+            "estimated_calibrated_frp": 3.8388084604039627
+          },
+          {
+            "period": "2019-01",
+            "observed_modis_detections": 189.0,
+            "observed_viirs_detections": 2130.0,
+            "observed_modis_frp": 16.002376079086606,
+            "observed_viirs_frp": 4.321341908780923,
+            "estimated_viirs_detections": 439.94242011901554,
+            "estimated_calibrated_frp": 4.762055305651552
+          },
+          {
+            "period": "2019-02",
+            "observed_modis_detections": 306.0,
+            "observed_viirs_detections": 2646.0,
+            "observed_modis_frp": 19.884390519933675,
+            "observed_viirs_frp": 4.874178561289322,
+            "estimated_viirs_detections": 958.8196133166037,
+            "estimated_calibrated_frp": 5.176003507944604
+          },
+          {
+            "period": "2019-03",
+            "observed_modis_detections": 181.0,
+            "observed_viirs_detections": 2509.0,
+            "observed_modis_frp": 20.94488991295443,
+            "observed_viirs_frp": 6.035858909177417,
+            "estimated_viirs_detections": 812.4954042875098,
+            "estimated_calibrated_frp": 6.132348044888444
+          },
+          {
+            "period": "2019-04",
+            "observed_modis_detections": 17.0,
+            "observed_viirs_detections": 920.0,
+            "observed_modis_frp": 23.61785714285714,
+            "observed_viirs_frp": 5.901086940490931,
+            "estimated_viirs_detections": 43.45094029004784,
+            "estimated_calibrated_frp": 7.859369752794246
+          },
+          {
+            "period": "2019-05",
+            "observed_modis_detections": 19.0,
+            "observed_viirs_detections": 633.0,
+            "observed_modis_frp": 17.086666666666666,
+            "observed_viirs_frp": 5.0253559640132535,
+            "estimated_viirs_detections": 31.754747485274855,
+            "estimated_calibrated_frp": 5.944730737519743
+          },
+          {
+            "period": "2019-06",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 67.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 4.150377358490566,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2019-08",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 0.0,
+            "observed_modis_frp": 5.6,
+            "observed_viirs_frp": null,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2019-10",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 17.0,
+            "observed_modis_frp": 5.65,
+            "observed_viirs_frp": 5.478666666666666,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2019-11",
+            "observed_modis_detections": 6.0,
+            "observed_viirs_detections": 118.0,
+            "observed_modis_frp": 7.960000000000001,
+            "observed_viirs_frp": 3.131801369863014,
+            "estimated_viirs_detections": 8.981797921246727,
+            "estimated_calibrated_frp": 3.209622970435757
+          },
+          {
+            "period": "2019-12",
+            "observed_modis_detections": 36.0,
+            "observed_viirs_detections": 368.0,
+            "observed_modis_frp": 10.281818181818181,
+            "observed_viirs_frp": 3.091638004965019,
+            "estimated_viirs_detections": 31.446312019186436,
+            "estimated_calibrated_frp": 3.521374995155625
+          },
+          {
+            "period": "2020-01",
+            "observed_modis_detections": 114.0,
+            "observed_viirs_detections": 946.0,
+            "observed_modis_frp": 14.283132530120483,
+            "observed_viirs_frp": 4.275887795413076,
+            "estimated_viirs_detections": 242.9711916680032,
+            "estimated_calibrated_frp": 4.430284276203249
+          },
+          {
+            "period": "2020-02",
+            "observed_modis_detections": 140.0,
+            "observed_viirs_detections": 1344.0,
+            "observed_modis_frp": 16.941077441077443,
+            "observed_viirs_frp": 4.816039576790517,
+            "estimated_viirs_detections": 459.70317693926535,
+            "estimated_calibrated_frp": 4.813145050552934
+          },
+          {
+            "period": "2020-03",
+            "observed_modis_detections": 81.0,
+            "observed_viirs_detections": 1478.0,
+            "observed_modis_frp": 19.225555555555555,
+            "observed_viirs_frp": 6.053873153632082,
+            "estimated_viirs_detections": 307.64699569391314,
+            "estimated_calibrated_frp": 6.279117179709798
+          },
+          {
+            "period": "2020-04",
+            "observed_modis_detections": 60.0,
+            "observed_viirs_detections": 925.0,
+            "observed_modis_frp": 22.330180180180182,
+            "observed_viirs_frp": 5.540398756744624,
+            "estimated_viirs_detections": 178.5825916539929,
+            "estimated_calibrated_frp": 7.054172768838056
+          },
+          {
+            "period": "2020-05",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 175.0,
+            "observed_modis_frp": 17.95,
+            "observed_viirs_frp": 4.647825765965301,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2020-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 13.0,
+            "observed_modis_frp": 9.6,
+            "observed_viirs_frp": 4.915384615384616,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2020-10",
+            "observed_modis_detections": 6.0,
+            "observed_viirs_detections": 11.0,
+            "observed_modis_frp": 7.283333333333333,
+            "observed_viirs_frp": 4.392222222222222,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2020-11",
+            "observed_modis_detections": 20.0,
+            "observed_viirs_detections": 229.0,
+            "observed_modis_frp": 11.137777777777778,
+            "observed_viirs_frp": 2.839299439102564,
+            "estimated_viirs_detections": 16.705631441539623,
+            "estimated_calibrated_frp": 3.9176539294240174
+          },
+          {
+            "period": "2020-12",
+            "observed_modis_detections": 55.0,
+            "observed_viirs_detections": 682.0,
+            "observed_modis_frp": 10.519148936170213,
+            "observed_viirs_frp": 3.3390617199391173,
+            "estimated_viirs_detections": 96.14840189417679,
+            "estimated_calibrated_frp": 3.680715723107765
+          },
+          {
+            "period": "2021-01",
+            "observed_modis_detections": 96.0,
+            "observed_viirs_detections": 1124.0,
+            "observed_modis_frp": 11.899549549549551,
+            "observed_viirs_frp": 3.8920705316321107,
+            "estimated_viirs_detections": 217.4406660675701,
+            "estimated_calibrated_frp": 4.161609747781857
+          },
+          {
+            "period": "2021-02",
+            "observed_modis_detections": 144.0,
+            "observed_viirs_detections": 1356.0,
+            "observed_modis_frp": 14.96044217687075,
+            "observed_viirs_frp": 4.665132445543027,
+            "estimated_viirs_detections": 433.8139586939932,
+            "estimated_calibrated_frp": 4.604662745719551
+          },
+          {
+            "period": "2021-03",
+            "observed_modis_detections": 101.0,
+            "observed_viirs_detections": 1543.0,
+            "observed_modis_frp": 17.45404929577465,
+            "observed_viirs_frp": 5.156494130836304,
+            "estimated_viirs_detections": 508.89582343831177,
+            "estimated_calibrated_frp": 5.6282102771883515
+          },
+          {
+            "period": "2021-04",
+            "observed_modis_detections": 16.0,
+            "observed_viirs_detections": 597.0,
+            "observed_modis_frp": 23.861538461538462,
+            "observed_viirs_frp": 5.34502436541691,
+            "estimated_viirs_detections": 47.455545338983235,
+            "estimated_calibrated_frp": 6.896428769522936
+          },
+          {
+            "period": "2021-05",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 94.0,
+            "observed_modis_frp": 22.183333333333334,
+            "observed_viirs_frp": 4.662254901960785,
+            "estimated_viirs_detections": 2.3775853622961174,
+            "estimated_calibrated_frp": 7.882437157369843
+          },
+          {
+            "period": "2021-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 17.0,
+            "observed_modis_frp": 5.5,
+            "observed_viirs_frp": 3.4684375,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2021-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 4.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 4.308333333333334,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2021-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 10.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.290277777777778,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2021-09",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 5.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.726,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2021-10",
+            "observed_modis_detections": 7.0,
+            "observed_viirs_detections": 22.0,
+            "observed_modis_frp": 31.48888888888889,
+            "observed_viirs_frp": 2.628611111111111,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2021-11",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 46.0,
+            "observed_modis_frp": 4.3,
+            "observed_viirs_frp": 3.9812268518518517,
+            "estimated_viirs_detections": 1.7161067138713832,
+            "estimated_calibrated_frp": 2.7428963030566877
+          },
+          {
+            "period": "2021-12",
+            "observed_modis_detections": 30.0,
+            "observed_viirs_detections": 299.0,
+            "observed_modis_frp": 7.46875,
+            "observed_viirs_frp": 3.19700873015873,
+            "estimated_viirs_detections": 28.41533118167154,
+            "estimated_calibrated_frp": 3.1921597765295258
+          },
+          {
+            "period": "2022-01",
+            "observed_modis_detections": 88.0,
+            "observed_viirs_detections": 736.0,
+            "observed_modis_frp": 12.78925120772947,
+            "observed_viirs_frp": 3.821950371452929,
+            "estimated_viirs_detections": 182.93291306373172,
+            "estimated_calibrated_frp": 4.343617841621621
+          },
+          {
+            "period": "2022-02",
+            "observed_modis_detections": 185.0,
+            "observed_viirs_detections": 1671.0,
+            "observed_modis_frp": 14.989880952380952,
+            "observed_viirs_frp": 4.027143150345617,
+            "estimated_viirs_detections": 525.3718264756727,
+            "estimated_calibrated_frp": 4.546290938640898
+          },
+          {
+            "period": "2022-03",
+            "observed_modis_detections": 226.0,
+            "observed_viirs_detections": 2344.0,
+            "observed_modis_frp": 16.032580515297905,
+            "observed_viirs_frp": 4.93785379745938,
+            "estimated_viirs_detections": 967.3112545839268,
+            "estimated_calibrated_frp": 5.478180207332184
+          },
+          {
+            "period": "2022-04",
+            "observed_modis_detections": 5.0,
+            "observed_viirs_detections": 340.0,
+            "observed_modis_frp": 10.2,
+            "observed_viirs_frp": 4.911609983079527,
+            "estimated_viirs_detections": 8.731020673046583,
+            "estimated_calibrated_frp": 5.424862126580941
+          },
+          {
+            "period": "2022-05",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 98.0,
+            "observed_modis_frp": 11.016666666666666,
+            "observed_viirs_frp": 3.7878406593406595,
+            "estimated_viirs_detections": 13.335526415295803,
+            "estimated_calibrated_frp": 5.147967778320644
+          },
+          {
+            "period": "2022-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 29.0,
+            "observed_modis_frp": 12.2,
+            "observed_viirs_frp": 7.173055555555556,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2022-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.29,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2022-09",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 3.0,
+            "observed_modis_frp": 7.8,
+            "observed_viirs_frp": 2.6266666666666665,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2022-10",
+            "observed_modis_detections": 15.0,
+            "observed_viirs_detections": 32.0,
+            "observed_modis_frp": 11.978571428571428,
+            "observed_viirs_frp": 3.665448717948718,
+            "estimated_viirs_detections": 1.9435452552622359,
+            "estimated_calibrated_frp": 2.649046822869376
+          },
+          {
+            "period": "2022-11",
+            "observed_modis_detections": 23.0,
+            "observed_viirs_detections": 220.0,
+            "observed_modis_frp": 12.078947368421053,
+            "observed_viirs_frp": 3.038405701754386,
+            "estimated_viirs_detections": 14.932067551890153,
+            "estimated_calibrated_frp": 3.8634607448223277
+          },
+          {
+            "period": "2022-12",
+            "observed_modis_detections": 56.0,
+            "observed_viirs_detections": 514.0,
+            "observed_modis_frp": 10.952592592592593,
+            "observed_viirs_frp": 3.5990448540706605,
+            "estimated_viirs_detections": 76.58946145937408,
+            "estimated_calibrated_frp": 3.7515028023141563
+          },
+          {
+            "period": "2023-01",
+            "observed_modis_detections": 174.0,
+            "observed_viirs_detections": 1690.0,
+            "observed_modis_frp": 11.594444444444445,
+            "observed_viirs_frp": 3.670567485004043,
+            "estimated_viirs_detections": 399.3741145352218,
+            "estimated_calibrated_frp": 4.069326151854579
+          },
+          {
+            "period": "2023-02",
+            "observed_modis_detections": 413.0,
+            "observed_viirs_detections": 3979.0,
+            "observed_modis_frp": 15.591202107279695,
+            "observed_viirs_frp": 4.453941257404635,
+            "estimated_viirs_detections": 1401.2021695916198,
+            "estimated_calibrated_frp": 4.706674375562039
+          },
+          {
+            "period": "2023-03",
+            "observed_modis_detections": 508.0,
+            "observed_viirs_detections": 11176.0,
+            "observed_modis_frp": 19.03268627964006,
+            "observed_viirs_frp": 4.946998201580467,
+            "estimated_viirs_detections": 2370.154603664491,
+            "estimated_calibrated_frp": 5.810826191049226
+          },
+          {
+            "period": "2023-04",
+            "observed_modis_detections": 43.0,
+            "observed_viirs_detections": 1507.0,
+            "observed_modis_frp": 14.05857142857143,
+            "observed_viirs_frp": 5.894550540997335,
+            "estimated_viirs_detections": 134.16968784631104,
+            "estimated_calibrated_frp": 6.174424612118413
+          },
+          {
+            "period": "2023-05",
+            "observed_modis_detections": 16.0,
+            "observed_viirs_detections": 571.0,
+            "observed_modis_frp": 15.203846153846154,
+            "observed_viirs_frp": 5.64096063604595,
+            "estimated_viirs_detections": 25.502104754585115,
+            "estimated_calibrated_frp": 5.749531646444174
+          },
+          {
+            "period": "2023-06",
+            "observed_modis_detections": 8.0,
+            "observed_viirs_detections": 154.0,
+            "observed_modis_frp": 13.164285714285715,
+            "observed_viirs_frp": 5.344979591836735,
+            "estimated_viirs_detections": 8.542902373426413,
+            "estimated_calibrated_frp": 7.217248361723646
+          },
+          {
+            "period": "2023-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 2.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 1.8900000000000001,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2023-08",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 21.0,
+            "observed_modis_frp": 10.75,
+            "observed_viirs_frp": 3.1675,
+            "estimated_viirs_detections": 1.028405297737962,
+            "estimated_calibrated_frp": 4.1252484857958285
+          },
+          {
+            "period": "2023-09",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 5.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.76,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2023-10",
+            "observed_modis_detections": 12.0,
+            "observed_viirs_detections": 79.0,
+            "observed_modis_frp": 10.828571428571427,
+            "observed_viirs_frp": 3.6666166666666666,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2023-11",
+            "observed_modis_detections": 22.0,
+            "observed_viirs_detections": 209.0,
+            "observed_modis_frp": 10.477777777777778,
+            "observed_viirs_frp": 3.315714285714286,
+            "estimated_viirs_detections": 16.57473749053959,
+            "estimated_calibrated_frp": 3.34813253958313
+          },
+          {
+            "period": "2023-12",
+            "observed_modis_detections": 80.0,
+            "observed_viirs_detections": 889.0,
+            "observed_modis_frp": 11.053869047619047,
+            "observed_viirs_frp": 3.588564524138265,
+            "estimated_viirs_detections": 93.7343718538801,
+            "estimated_calibrated_frp": 3.7745626878608354
+          },
+          {
+            "period": "2024-01",
+            "observed_modis_detections": 98.0,
+            "observed_viirs_detections": 1413.0,
+            "observed_modis_frp": 11.74517543859649,
+            "observed_viirs_frp": 4.058528057809469,
+            "estimated_viirs_detections": 208.41884899498714,
+            "estimated_calibrated_frp": 4.167896098038299
+          },
+          {
+            "period": "2024-02",
+            "observed_modis_detections": 150.0,
+            "observed_viirs_detections": 2182.0,
+            "observed_modis_frp": 15.408399339933995,
+            "observed_viirs_frp": 4.737030373007112,
+            "estimated_viirs_detections": 402.57774672113266,
+            "estimated_calibrated_frp": 4.708145874637734
+          },
+          {
+            "period": "2024-03",
+            "observed_modis_detections": 82.0,
+            "observed_viirs_detections": 2207.0,
+            "observed_modis_frp": 18.330345911949685,
+            "observed_viirs_frp": 5.58199406262893,
+            "estimated_viirs_detections": 378.6277590109588,
+            "estimated_calibrated_frp": 5.7839778042954615
+          },
+          {
+            "period": "2024-04",
+            "observed_modis_detections": 40.0,
+            "observed_viirs_detections": 1148.0,
+            "observed_modis_frp": 17.01923076923077,
+            "observed_viirs_frp": 5.754084025131149,
+            "estimated_viirs_detections": 126.62666124387748,
+            "estimated_calibrated_frp": 6.532638340309775
+          },
+          {
+            "period": "2024-05",
+            "observed_modis_detections": 2.0,
+            "observed_viirs_detections": 430.0,
+            "observed_modis_frp": 5.6,
+            "observed_viirs_frp": 5.459677590485007,
+            "estimated_viirs_detections": 4.848402705655143,
+            "estimated_calibrated_frp": 4.1369417363793755
+          },
+          {
+            "period": "2024-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 26.0,
+            "observed_modis_frp": 10.6,
+            "observed_viirs_frp": 4.8537037037037045,
+            "estimated_viirs_detections": 2.3487950353951423,
+            "estimated_calibrated_frp": 7.630713508584877
+          },
+          {
+            "period": "2024-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 8.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 4.28,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2024-09",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 10.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 3.6374999999999997,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2024-10",
+            "observed_modis_detections": 14.0,
+            "observed_viirs_detections": 15.0,
+            "observed_modis_frp": 20.35,
+            "observed_viirs_frp": 3.774230769230769,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2024-11",
+            "observed_modis_detections": 22.0,
+            "observed_viirs_detections": 359.0,
+            "observed_modis_frp": 12.50875,
+            "observed_viirs_frp": 3.6432130803140925,
+            "estimated_viirs_detections": 28.647555737559756,
+            "estimated_calibrated_frp": 3.8236697165691744
+          },
+          {
+            "period": "2024-12",
+            "observed_modis_detections": 29.0,
+            "observed_viirs_detections": 445.0,
+            "observed_modis_frp": 13.144,
+            "observed_viirs_frp": 3.870328439676266,
+            "estimated_viirs_detections": 37.0870801366741,
+            "estimated_calibrated_frp": 4.283165456590878
+          },
+          {
+            "period": "2025-01",
+            "observed_modis_detections": 124.0,
+            "observed_viirs_detections": 1580.0,
+            "observed_modis_frp": 12.378421052631579,
+            "observed_viirs_frp": 3.9688379913035132,
+            "estimated_viirs_detections": 265.71355522969884,
+            "estimated_calibrated_frp": 4.371936671896928
+          },
+          {
+            "period": "2025-02",
+            "observed_modis_detections": 227.0,
+            "observed_viirs_detections": 2901.0,
+            "observed_modis_frp": 16.661397005772006,
+            "observed_viirs_frp": 4.983784091346682,
+            "estimated_viirs_detections": 763.2090286666247,
+            "estimated_calibrated_frp": 4.802365268031735
+          },
+          {
+            "period": "2025-03",
+            "observed_modis_detections": 119.0,
+            "observed_viirs_detections": 2515.0,
+            "observed_modis_frp": 17.30552434456929,
+            "observed_viirs_frp": 5.768493629042057,
+            "estimated_viirs_detections": 501.51626112050184,
+            "estimated_calibrated_frp": 5.815378303641285
+          },
+          {
+            "period": "2025-04",
+            "observed_modis_detections": 21.0,
+            "observed_viirs_detections": 639.0,
+            "observed_modis_frp": 20.69464285714286,
+            "observed_viirs_frp": 5.31409298941799,
+            "estimated_viirs_detections": 21.282491238227916,
+            "estimated_calibrated_frp": 5.3405733069992705
+          },
+          {
+            "period": "2025-05",
+            "observed_modis_detections": 20.0,
+            "observed_viirs_detections": 241.0,
+            "observed_modis_frp": 12.34,
+            "observed_viirs_frp": 4.914588543496078,
+            "estimated_viirs_detections": 13.757376439351791,
+            "estimated_calibrated_frp": 4.608046485852185
+          },
+          {
+            "period": "2025-06",
+            "observed_modis_detections": 1.0,
+            "observed_viirs_detections": 27.0,
+            "observed_modis_frp": 7.0,
+            "observed_viirs_frp": 5.070677083333333,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2025-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 2.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 5.43,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2025-09",
+            "observed_modis_detections": 4.0,
+            "observed_viirs_detections": 1.0,
+            "observed_modis_frp": 9.725,
+            "observed_viirs_frp": 3.02,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2025-10",
+            "observed_modis_detections": 5.0,
+            "observed_viirs_detections": 55.0,
+            "observed_modis_frp": 12.959999999999999,
+            "observed_viirs_frp": 3.7342045454545456,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2025-11",
+            "observed_modis_detections": 38.0,
+            "observed_viirs_detections": 695.0,
+            "observed_modis_frp": 9.854545454545454,
+            "observed_viirs_frp": 3.6741020010646537,
+            "estimated_viirs_detections": 33.56560242197703,
+            "estimated_calibrated_frp": 3.2109955191116226
+          },
+          {
+            "period": "2025-12",
+            "observed_modis_detections": 90.0,
+            "observed_viirs_detections": 1228.0,
+            "observed_modis_frp": 11.218981481481482,
+            "observed_viirs_frp": 3.652904078269059,
+            "estimated_viirs_detections": 110.63234683098489,
+            "estimated_calibrated_frp": 3.781077729924267
+          },
+          {
+            "period": "2026-01",
+            "observed_modis_detections": 156.0,
+            "observed_viirs_detections": 1965.0,
+            "observed_modis_frp": 10.634259259259258,
+            "observed_viirs_frp": 4.207146879317941,
+            "estimated_viirs_detections": 289.00597848125255,
+            "estimated_calibrated_frp": 3.8389949402530377
+          },
+          {
+            "period": "2026-02",
+            "observed_modis_detections": 130.0,
+            "observed_viirs_detections": 2457.0,
+            "observed_modis_frp": 13.438107638888889,
+            "observed_viirs_frp": 4.79318263107284,
+            "estimated_viirs_detections": 403.25281279445466,
+            "estimated_calibrated_frp": 4.6137404205404815
+          },
+          {
+            "period": "2026-03",
+            "observed_modis_detections": 126.0,
+            "observed_viirs_detections": 2531.0,
+            "observed_modis_frp": 12.728143392188338,
+            "observed_viirs_frp": 5.480596949642267,
+            "estimated_viirs_detections": 489.7102278539796,
+            "estimated_calibrated_frp": 5.03026815418305
+          },
+          {
+            "period": "2026-04",
+            "observed_modis_detections": 26.0,
+            "observed_viirs_detections": 766.0,
+            "observed_modis_frp": 13.0,
+            "observed_viirs_frp": 5.045354199980041,
+            "estimated_viirs_detections": 46.14640032967678,
+            "estimated_calibrated_frp": 5.693050692447125
+          },
+          {
+            "period": "2026-05",
+            "observed_modis_detections": 11.0,
+            "observed_viirs_detections": 451.0,
+            "observed_modis_frp": 8.809375,
+            "observed_viirs_frp": 5.487076414573161,
+            "estimated_viirs_detections": 11.38466683758449,
+            "estimated_calibrated_frp": 4.9465872506456785
+          },
+          {
+            "period": "2026-06",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 53.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 4.862888888888889,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2026-07",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 13.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 2.808518518518518,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2026-08",
+            "observed_modis_detections": 0.0,
+            "observed_viirs_detections": 13.0,
+            "observed_modis_frp": null,
+            "observed_viirs_frp": 4.921083333333333,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2026-09",
+            "observed_modis_detections": 3.0,
+            "observed_viirs_detections": 60.0,
+            "observed_modis_frp": 17.7575,
+            "observed_viirs_frp": 4.367191666666667,
+            "estimated_viirs_detections": null,
+            "estimated_calibrated_frp": null
+          },
+          {
+            "period": "2026-10",
+            "observed_modis_detections": 6.0,
+            "observed_viirs_detections": 223.0,
+            "observed_modis_frp": 16.752000000000002,
+            "observed_viirs_frp": 4.22056862745098,
+            "estimated_viirs_detections": 4.807759295383985,
+            "estimated_calibrated_frp": 4.474599089936821
+          },
+          {
+            "period": "2026-11",
+            "observed_modis_detections": 15.0,
+            "observed_viirs_detections": 119.0,
+            "observed_modis_frp": 25.867222222222225,
+            "observed_viirs_frp": 4.064366896816264,
+            "estimated_viirs_detections": 3.3591491709344155,
+            "estimated_calibrated_frp": 2.8225575559640683
+          }
+        ]
+      }
+    }
+  }
+}
