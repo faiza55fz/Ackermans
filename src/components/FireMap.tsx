@@ -11,10 +11,11 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import type { Hotspot } from "../data";
+import type { Hotspot,  MapCell } from "../data";
 import "leaflet/dist/leaflet.css";
 
 type FireMapProps = {
+  cells?: MapCell[];
   hotspots: Hotspot[];
   height?: number | string;
   compact?: boolean;
@@ -62,6 +63,12 @@ function makeIcon(family: "MODIS" | "VIIRS" | "MIXED", selected = false, count?:
 // Built-in catalog covering all US states, territories, Canadian provinces and key fire regions
 const knownLocations: Record<string, [number, number, number]> = {
   // Western US Fire Regions & Datasets
+    // FireTrace project regions
+  "western ghats, karnataka": [13.0, 75.5, 7],
+  "western ghats": [13.0, 75.5, 7],
+  karnataka: [14.5, 76.0, 6],
+  "palisades, california": [34.05, -118.53, 11],
+  palisades: [34.05, -118.53, 11],
   "northern california": [40.0, -121.5, 7],
   "central california": [37.2, -119.8, 7],
   "southern california": [34.5, -118.5, 7],
@@ -222,6 +229,7 @@ function clusterHotspots(points: Hotspot[], zoom: number): ClusterItem[] {
 
 export function FireMap({
   hotspots,
+  cells = [],
   height = 430,
   compact,
   family,
@@ -239,7 +247,13 @@ export function FireMap({
   const [searchStatus, setSearchStatus] = useState<"idle" | "searching" | "not-found">("idle");
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const defaultCenter: [number, number] = [39.6, -116.5];
+ const defaultCenter: [number, number] =
+  cells.length > 0
+    ? [
+        cells.reduce((sum, cell) => sum + cell.latitude, 0) / cells.length,
+        cells.reduce((sum, cell) => sum + cell.longitude, 0) / cells.length,
+      ]
+    : [39.6, -116.5];
   const defaultZoom = compact ? 4 : 5;
 
   const visible = useMemo(
@@ -381,6 +395,45 @@ export function FireMap({
 
         <MapEvents onZoom={setZoom} drawMode={drawMode} onDrawPoint={onDrawPoint} />
 
+        {cells.map((cell) => {
+  const family =
+    cell.modis_detections > 0 && cell.viirs_detections > 0
+      ? "MIXED"
+      : cell.modis_detections > 0
+        ? "MODIS"
+        : "VIIRS";
+
+  const color =
+    family === "MIXED" ? "#ff9f43" :
+    family === "MODIS" ? "#ff5c35" : "#ffb23d";
+
+  return (
+    <Circle
+      key={cell.cell_id}
+      center={[cell.latitude, cell.longitude]}
+      radius={Math.min(12000, 2500 + Math.sqrt(cell.detections) * 250)}
+      pathOptions={{
+        color,
+        weight: 1,
+        fillColor: color,
+        fillOpacity: 0.35,
+      }}
+    >
+      <Tooltip>
+        <strong>{cell.detections.toLocaleString("en-IN")} detections</strong>
+        <br />
+        MODIS: {cell.modis_detections.toLocaleString("en-IN")}
+        <br />
+        VIIRS: {cell.viirs_detections.toLocaleString("en-IN")}
+        <br />
+        Mean FRP: {cell.mean_frp == null ? "Unavailable" : `${cell.mean_frp.toFixed(2)} MW`}
+        <br />
+        Period: {cell.first_date} – {cell.last_date}
+      </Tooltip>
+    </Circle>
+  );
+})}
+
         {heatmap &&
           visible.map((point) => (
             <Circle
@@ -440,6 +493,8 @@ export function FireMap({
           );
         })}
       </MapContainer>
+
+      
 
       {!compact && (
         <form
@@ -530,7 +585,7 @@ export function FireMap({
         <span>
           <i className="legend-dot viirs" /> VIIRS
         </span>
-        <b>OBSERVATIONS</b>
+        <b>AGGREGATED GRID CELLS</b>
       </div>
     </div>
   );

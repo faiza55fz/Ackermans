@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -47,6 +47,7 @@ import {
   YAxis,
 } from "recharts";
 import { FireMap } from "./components/FireMap";
+import { loadDashboardData } from "./dashboardData";
 import { Card, ChartTooltip, DemoBadge, EmptyState, Status } from "./components/UI";
 import {
   calendarYears,
@@ -58,6 +59,7 @@ import {
   type Hotspot,
   type PageName,
 } from "./data";
+
 
 const navIcons = [Grid3X3, Globe2, CalendarDays, Layers3, AreaIcon, AlertTriangle, ShieldCheck];
 const chartColors = {
@@ -118,10 +120,12 @@ function TrendChart({
   type = "overview",
   height = 260,
   range = "Jan 2000 — Aug 2024",
+  yearlyData,
 }: {
   type?: "overview" | "harmonized";
   height?: number;
   range?: string;
+  yearlyData?: { year: number; detections: number }[];
 }) {
   const [visible, setVisible] = useState({
     modis: true,
@@ -129,10 +133,17 @@ function TrendChart({
     harmonized: true,
     uncertainty: true,
   });
-  const items =
-    type === "overview" ? ["modis", "viirs"] : ["modis", "viirs", "harmonized", "uncertainty"];
+    const items =
+    type === "overview" ? ["detections"] : ["modis", "viirs", "harmonized", "uncertainty"];
 
   const chartData = useMemo(() => {
+    if (type === "overview") {
+      return (yearlyData ?? []).map((item) => ({
+        year: String(item.year),
+        detections: item.detections,
+      }));
+    }
+
     if (range === "2024 only") {
       return trendData.filter((d) => Number(d.year) >= 2023);
     }
@@ -140,7 +151,8 @@ function TrendChart({
       return trendData.filter((d) => Number(d.year) >= 2021);
     }
     return trendData;
-  }, [range]);
+  }, [range, type, yearlyData]);
+  
   return (
     <>
       <div className="chart-legend">
@@ -166,7 +178,7 @@ function TrendChart({
       </div>
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData as any} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid stroke="#233142" vertical={false} />
             <XAxis
               dataKey="year"
@@ -324,15 +336,20 @@ function MonthlyChart({
 function Overview({
   setPage,
   filters,
+  projectData,
 }: {
   setPage: (page: PageName) => void;
   filters: GlobalFilters;
+  projectData: Awaited<ReturnType<typeof loadDashboardData>>;
 }) {
+  const regionKey =
+    filters.region === "Palisades, California"
+      ? "palisades_la"
+      : "western_ghats_karnataka";
+
+  const regionStats = projectData.dashboard.regions[regionKey];
+  const regionalCells = projectData.map.regions[regionKey];
   const [selected, setSelected] = useState<Hotspot | null>(null);
-  const regionalHotspots = useMemo(
-    () => hotspots.filter((h) => isHotspotInRegion(h, filters.region)),
-    [filters.region],
-  );
 
   return (
     <>
@@ -345,52 +362,47 @@ function Overview({
           <Globe2 size={15} /> Open Fire Explorer
         </button>
       </PageIntro>
-      <div className="kpi-grid">
-        {[
-          ["Total recorded detections", "3.84M", "+8.2% coverage", Flame],
-          [
-            "Active observation period",
-            filters.range === "2024 only" || filters.range === "Last 12 months"
-              ? "1.0 yr"
-              : "24.6 yrs",
-            filters.range === "2024 only"
-              ? "2024"
-              : filters.range === "Last 12 months"
-                ? "Aug 2023 — Aug 2024"
-                : "2000 — 2024",
-            CalendarDays,
-          ],
-          [
-            "Areas analysed",
-            filters.region === "California"
-              ? "58"
-              : filters.region === "Pacific Northwest"
-                ? "3"
-                : filters.region === "Western United States"
-                  ? "11"
-                  : "186",
-            filters.region === "California"
-              ? "California counties"
-              : filters.region === "Pacific Northwest"
-                ? "OR, WA, ID"
-                : filters.region === "Western United States"
-                  ? "Western US states"
-                  : "Administrative regions",
-            Target,
-          ],
-          ["Data coverage", "94.2%", "1.8% partial", Radio],
-        ].map(([label, value, note, Icon]) => (
-          <Card key={label as string} className="kpi-card">
-            <div className="kpi-top">
-              <span>{label as string}</span>
-              <Icon size={17} />
-            </div>
-            <strong>{value as string}</strong>
-            <small>{note as string}</small>
-            <DemoBadge />
-          </Card>
-        ))}
+      
+<div className="kpi-grid">
+  {[
+    [
+      "Total recorded detections",
+      regionStats.total_detections.toLocaleString("en-IN"),
+      `${regionStats.unique_detection_days.toLocaleString("en-IN")} observation days`,
+      Flame,
+    ],
+    [
+      "Observation period",
+      `${regionStats.year_start}–${regionStats.year_end}`,
+      `${regionStats.date_start} to ${regionStats.date_end}`,
+      CalendarDays,
+    ],
+    [
+      "Grid cells analysed",
+      regionStats.unique_grid_cells.toLocaleString("en-IN"),
+      `${projectData.dashboard.cell_size_degrees}° grid resolution`,
+      Target,
+    ],
+    [
+      "Mean fire radiative power",
+      regionStats.frp.mean == null
+        ? "Unavailable"
+        : `${regionStats.frp.mean.toFixed(2)} MW`,
+      `${regionStats.frp.available_records.toLocaleString("en-IN")} records with FRP`,
+      Radio,
+    ],
+  ].map(([label, value, note, Icon]) => (
+    <Card key={label as string} className="kpi-card">
+      <div className="kpi-top">
+        <span>{label as string}</span>
+        <Icon size={17} />
       </div>
+      <strong>{value as string}</strong>
+      <small>{note as string}</small>
+    </Card>
+  ))}
+</div>
+
       <Card
         className="map-card"
         eyebrow={`Geospatial overview · ${filters.region}`}
@@ -402,7 +414,8 @@ function Overview({
         }
       >
         <FireMap
-          hotspots={regionalHotspots}
+          hotspots={[]}
+          cells={regionalCells}
           onSelect={setSelected}
           selected={selected}
           height={455}
@@ -442,7 +455,9 @@ function Overview({
           eyebrow="Normalized activity index"
           action={<DemoBadge />}
         >
-          <TrendChart range={filters.range} />
+          <TrendChart range={filters.range}
+          yearlyData={regionStats.yearly_trend}
+          />
         </Card>
         <Card
           title="Monthly distribution"
@@ -1614,17 +1629,29 @@ function Sidebar({
   );
 }
 
+
 export default function App() {
   const [page, setPage] = useState<PageName>("Overview");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const [projectData, setProjectData] = useState<Awaited<ReturnType<typeof loadDashboardData>> | null>(null);
+  const [dataError, setDataError] = useState("");
+
+  useEffect(() => {
+    loadDashboardData()
+      .then(setProjectData)
+      .catch((error) => setDataError(error.message));
+  }, []);
+
   const [filters, setFilters] = useState<GlobalFilters>({
-    region: "Western United States",
-    range: "Jan 2000 — Aug 2024",
+    region: "Western Ghats, Karnataka",
+    range: "All available data",
   });
+
   const content =
     page === "Overview" ? (
-      <Overview setPage={setPage} filters={filters} />
+      <Overview setPage={setPage} filters={filters} projectData={projectData!} />
     ) : page === "Fire Explorer" ? (
       <FireExplorer filters={filters} onFiltersChange={setFilters} />
     ) : page === "Historical Calendar" ? (
@@ -1638,6 +1665,15 @@ export default function App() {
     ) : (
       <DataQuality filters={filters} />
     );
+
+  if (dataError) {
+    return <div className="app-shell">Unable to load FireTrace data: {dataError}</div>;
+  }
+
+  if (!projectData) {
+    return <div className="app-shell">Loading real FireTrace data...</div>;
+  }
+
   return (
     <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
       <Sidebar
@@ -1659,7 +1695,7 @@ export default function App() {
           {content}
           <footer>
             <span>FireTrace · Satellite Fire Intelligence</span>
-            <span>Interface prototype · All values shown are demo data</span>
+            <span>NASA FIRMS · Project dataset</span>
           </footer>
         </main>
       </div>
