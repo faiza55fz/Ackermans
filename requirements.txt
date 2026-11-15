@@ -1,0 +1,9 @@
+# Python 3.11
+pandas
+geopandas
+numpy
+statsmodels
+scikit-learn
+pytest
+PyYAML
+pyarrow
