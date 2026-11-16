@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -47,6 +47,11 @@ import {
   YAxis,
 } from "recharts";
 import { FireMap } from "./components/FireMap";
+import {
+  loadDashboardData,
+  type HarmonizedMetricSeries,
+  type HarmonizedSummary,
+} from "./dashboardData";
 import { Card, ChartTooltip, DemoBadge, EmptyState, Status } from "./components/UI";
 import {
   calendarYears,
@@ -59,6 +64,7 @@ import {
   type PageName,
 } from "./data";
 
+
 const navIcons = [Grid3X3, Globe2, CalendarDays, Layers3, AreaIcon, AlertTriangle, ShieldCheck];
 const chartColors = {
   modis: "#ff7547",
@@ -66,6 +72,7 @@ const chartColors = {
   harmonized: "#ffb84d",
   baseline: "#75859a",
 };
+const MODEL_OUTPUT_DISCLAIMER = "Experimental Model Output (In-Sample Calibration)";
 
 type GlobalFilters = { region: string; range: string };
 
@@ -118,10 +125,12 @@ function TrendChart({
   type = "overview",
   height = 260,
   range = "Jan 2000 — Aug 2024",
+  yearlyData,
 }: {
   type?: "overview" | "harmonized";
   height?: number;
   range?: string;
+  yearlyData?: { year: number; detections: number }[];
 }) {
   const [visible, setVisible] = useState({
     modis: true,
@@ -129,10 +138,17 @@ function TrendChart({
     harmonized: true,
     uncertainty: true,
   });
-  const items =
-    type === "overview" ? ["modis", "viirs"] : ["modis", "viirs", "harmonized", "uncertainty"];
+    const items =
+    type === "overview" ? ["detections"] : ["modis", "viirs", "harmonized", "uncertainty"];
 
   const chartData = useMemo(() => {
+    if (type === "overview") {
+      return (yearlyData ?? []).map((item) => ({
+        year: String(item.year),
+        detections: item.detections,
+      }));
+    }
+
     if (range === "2024 only") {
       return trendData.filter((d) => Number(d.year) >= 2023);
     }
@@ -140,7 +156,8 @@ function TrendChart({
       return trendData.filter((d) => Number(d.year) >= 2021);
     }
     return trendData;
-  }, [range]);
+  }, [range, type, yearlyData]);
+  
   return (
     <>
       <div className="chart-legend">
@@ -166,7 +183,7 @@ function TrendChart({
       </div>
       <div style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={chartData} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
+          <ComposedChart data={chartData as any} margin={{ top: 16, right: 8, left: -20, bottom: 0 }}>
             <CartesianGrid stroke="#233142" vertical={false} />
             <XAxis
               dataKey="year"
@@ -321,18 +338,122 @@ function MonthlyChart({
   );
 }
 
+function HarmonizedMetricCharts({
+  series,
+  periodLabel,
+}: {
+  series: HarmonizedMetricSeries[];
+  periodLabel: "Year" | "Month";
+}) {
+  return (
+    <div className="content-grid two">
+      <Card
+        title="Observed and estimated detections"
+        eyebrow={`Cell-day totals by ${periodLabel.toLowerCase()}`}
+      >
+        <div style={{ height: 280 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={series} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
+              <CartesianGrid stroke="#233142" vertical={false} />
+              <XAxis dataKey="period" tick={{ fill: "#77879b", fontSize: 10 }} />
+              <YAxis tick={{ fill: "#77879b", fontSize: 10 }} />
+              <Tooltip content={<ChartTooltip modelOutputDisclaimer />} />
+              <Legend
+                formatter={(value) => <span className="chart-legend-label">{value}</span>}
+              />
+              <Line
+                type="monotone"
+                dataKey="observedModisDetections"
+                name="Observed MODIS"
+                stroke={chartColors.modis}
+                dot={false}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="observedViirsDetections"
+                name="Observed VIIRS"
+                stroke={chartColors.viirs}
+                dot={false}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="estimatedViirsDetections"
+                name={`Estimated VIIRS · ${MODEL_OUTPUT_DISCLAIMER}`}
+                stroke={chartColors.harmonized}
+                strokeWidth={2}
+                dot={false}
+                connectNulls={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+      <Card
+        title="Observed and calibrated FRP"
+        eyebrow={`Mean FRP by ${periodLabel.toLowerCase()} · MW`}
+      >
+        <div style={{ height: 280 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={series} margin={{ top: 10, right: 12, left: -12, bottom: 0 }}>
+              <CartesianGrid stroke="#233142" vertical={false} />
+              <XAxis dataKey="period" tick={{ fill: "#77879b", fontSize: 10 }} />
+              <YAxis tick={{ fill: "#77879b", fontSize: 10 }} />
+              <Tooltip content={<ChartTooltip modelOutputDisclaimer />} />
+              <Legend
+                formatter={(value) => <span className="chart-legend-label">{value}</span>}
+              />
+              <Line
+                type="monotone"
+                dataKey="observedModisFrp"
+                name="Observed MODIS FRP"
+                stroke={chartColors.modis}
+                dot={false}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="observedViirsFrp"
+                name="Observed VIIRS FRP"
+                stroke={chartColors.viirs}
+                dot={false}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="estimatedCalibratedFrp"
+                name={`Calibrated FRP · ${MODEL_OUTPUT_DISCLAIMER}`}
+                stroke={chartColors.harmonized}
+                strokeWidth={2}
+                dot={false}
+                connectNulls={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 function Overview({
   setPage,
   filters,
+  projectData,
 }: {
   setPage: (page: PageName) => void;
   filters: GlobalFilters;
+  projectData: Awaited<ReturnType<typeof loadDashboardData>>;
 }) {
+  const regionKey =
+    filters.region === "Palisades, California"
+      ? "palisades_la"
+      : "western_ghats_karnataka";
+
+  const regionStats = projectData.dashboard.regions[regionKey];
+  const regionalCells = projectData.map.regions[regionKey];
   const [selected, setSelected] = useState<Hotspot | null>(null);
-  const regionalHotspots = useMemo(
-    () => hotspots.filter((h) => isHotspotInRegion(h, filters.region)),
-    [filters.region],
-  );
 
   return (
     <>
@@ -345,52 +466,47 @@ function Overview({
           <Globe2 size={15} /> Open Fire Explorer
         </button>
       </PageIntro>
-      <div className="kpi-grid">
-        {[
-          ["Total recorded detections", "3.84M", "+8.2% coverage", Flame],
-          [
-            "Active observation period",
-            filters.range === "2024 only" || filters.range === "Last 12 months"
-              ? "1.0 yr"
-              : "24.6 yrs",
-            filters.range === "2024 only"
-              ? "2024"
-              : filters.range === "Last 12 months"
-                ? "Aug 2023 — Aug 2024"
-                : "2000 — 2024",
-            CalendarDays,
-          ],
-          [
-            "Areas analysed",
-            filters.region === "California"
-              ? "58"
-              : filters.region === "Pacific Northwest"
-                ? "3"
-                : filters.region === "Western United States"
-                  ? "11"
-                  : "186",
-            filters.region === "California"
-              ? "California counties"
-              : filters.region === "Pacific Northwest"
-                ? "OR, WA, ID"
-                : filters.region === "Western United States"
-                  ? "Western US states"
-                  : "Administrative regions",
-            Target,
-          ],
-          ["Data coverage", "94.2%", "1.8% partial", Radio],
-        ].map(([label, value, note, Icon]) => (
-          <Card key={label as string} className="kpi-card">
-            <div className="kpi-top">
-              <span>{label as string}</span>
-              <Icon size={17} />
-            </div>
-            <strong>{value as string}</strong>
-            <small>{note as string}</small>
-            <DemoBadge />
-          </Card>
-        ))}
+      
+<div className="kpi-grid">
+  {[
+    [
+      "Total recorded detections",
+      regionStats.total_detections.toLocaleString("en-IN"),
+      `${regionStats.unique_detection_days.toLocaleString("en-IN")} observation days`,
+      Flame,
+    ],
+    [
+      "Observation period",
+      `${regionStats.year_start}–${regionStats.year_end}`,
+      `${regionStats.date_start} to ${regionStats.date_end}`,
+      CalendarDays,
+    ],
+    [
+      "Grid cells analysed",
+      regionStats.unique_grid_cells.toLocaleString("en-IN"),
+      `${projectData.dashboard.cell_size_degrees}° grid resolution`,
+      Target,
+    ],
+    [
+      "Mean fire radiative power",
+      regionStats.frp.mean == null
+        ? "Unavailable"
+        : `${regionStats.frp.mean.toFixed(2)} MW`,
+      `${regionStats.frp.available_records.toLocaleString("en-IN")} records with FRP`,
+      Radio,
+    ],
+  ].map(([label, value, note, Icon]) => (
+    <Card key={label as string} className="kpi-card">
+      <div className="kpi-top">
+        <span>{label as string}</span>
+        <Icon size={17} />
       </div>
+      <strong>{value as string}</strong>
+      <small>{note as string}</small>
+    </Card>
+  ))}
+</div>
+
       <Card
         className="map-card"
         eyebrow={`Geospatial overview · ${filters.region}`}
@@ -402,7 +518,8 @@ function Overview({
         }
       >
         <FireMap
-          hotspots={regionalHotspots}
+          hotspots={[]}
+          cells={regionalCells}
           onSelect={setSelected}
           selected={selected}
           height={455}
@@ -442,7 +559,9 @@ function Overview({
           eyebrow="Normalized activity index"
           action={<DemoBadge />}
         >
-          <TrendChart range={filters.range} />
+          <TrendChart range={filters.range}
+          yearlyData={regionStats.yearly_trend}
+          />
         </Card>
         <Card
           title="Monthly distribution"
@@ -935,191 +1054,134 @@ function HistoricalCalendar({
   );
 }
 
-function SensorComparison({ filters }: { filters: GlobalFilters }) {
-  const regionalHotspots = useMemo(
-    () => hotspots.filter((h) => isHotspotInRegion(h, filters.region)),
-    [filters.region],
-  );
-
+function SensorComparison({
+  summary,
+}: {
+  summary: HarmonizedSummary;
+}) {
   return (
     <>
       <PageIntro
         kicker="Cross-sensor analysis"
-        title="Sensor Comparison"
-        text="Compare the observation characteristics of MODIS and VIIRS without treating raw detection counts as equivalent measures."
-      >
-        <div className="control-row">
-          <select>
-            <option>MODIS Aqua</option>
-            <option>MODIS Terra</option>
-          </select>
-          <span className="versus">vs</span>
-          <select>
-            <option>VIIRS S-NPP</option>
-            <option>VIIRS NOAA-20</option>
-          </select>
-        </div>
-      </PageIntro>
+        title="Regional Comparison"
+        text="Compare observed MODIS and VIIRS detections with modeled VIIRS counts and calibrated FRP from the harmonization export."
+        badge={false}
+      />
       <div className="science-warning">
         <AlertTriangle size={19} />
         <div>
-          <strong>Interpret raw counts with care</strong>
+          <strong>{MODEL_OUTPUT_DISCLAIMER}</strong>
           <p>
-            Different satellites have different spatial resolutions, observation times and detection
-            sensitivities. Raw detection counts should not be interpreted as directly equivalent
-            measurements of fire activity.
+            {summary.region.replace(/_/g, " ")} observed measurements are shown separately from
+            estimated VIIRS counts and calibrated FRP. Model values are from in-sample calibration,
+            are not independent validation, and should be interpreted as experimental.
           </p>
         </div>
       </div>
-      <div className="comparison-maps">
-        <Card
-          title="MODIS observations"
-          eyebrow={`1 km nominal resolution · ${filters.region}`}
-          action={<span className="sensor-tag modis">MODIS Aqua</span>}
-        >
-          <FireMap hotspots={regionalHotspots} family="MODIS" compact height={290} />
-        </Card>
-        <Card
-          title="VIIRS observations"
-          eyebrow={`375 m nominal resolution · ${filters.region}`}
-          action={<span className="sensor-tag viirs">VIIRS S-NPP</span>}
-        >
-          <FireMap hotspots={regionalHotspots} family="VIIRS" compact height={290} />
-        </Card>
-      </div>
-      <div className="content-grid two-one">
-        <Card
-          title="Monthly detection comparison"
-          eyebrow={`Raw observations · ${filters.region}`}
-          action={<DemoBadge />}
-        >
-          <MonthlyChart comparison height={280} />
-        </Card>
-        <Card title="Observation details" eyebrow="Selected platforms">
-          <div className="sensor-specs">
-            <div>
-              <b>MODIS Aqua</b>
-              <dl>
-                <dt>Nominal pixel</dt>
-                <dd>1,000 m</dd>
-                <dt>Equator crossing</dt>
-                <dd>13:30 local</dd>
-                <dt>Archive start</dt>
-                <dd>July 2002</dd>
-              </dl>
-            </div>
-            <div>
-              <b>VIIRS S-NPP</b>
-              <dl>
-                <dt>Nominal pixel</dt>
-                <dd>375 m</dd>
-                <dt>Equator crossing</dt>
-                <dd>13:30 local</dd>
-                <dt>Archive start</dt>
-                <dd>January 2012</dd>
-              </dl>
-            </div>
-          </div>
-        </Card>
-      </div>
-      <div className="content-grid three">
-        <Card title="Raw MODIS activity" eyebrow="Monthly mean">
-          <div className="mini-stat">
-            <strong>48.6</strong>
-            <span>detections / month</span>
-            <small>Demo aggregate</small>
-          </div>
-        </Card>
-        <Card title="Raw VIIRS activity" eyebrow="Monthly mean">
-          <div className="mini-stat cyan">
-            <strong>86.9</strong>
-            <span>detections / month</span>
-            <small>Higher count ≠ more fires</small>
-          </div>
-        </Card>
-        <Card title="FRP availability" eyebrow="Comparable subset">
-          <div className="progress-stat">
-            <strong>88%</strong>
-            <div>
-              <i style={{ width: "88%" }} />
-            </div>
-            <small>Valid paired FRP observations</small>
-          </div>
-        </Card>
-      </div>
+      <HarmonizedMetricCharts series={summary.timeseries.monthly} periodLabel="Month" />
+      <small className="center-note">
+        Monthly totals and means cover available dates in the exported dataset.
+      </small>
     </>
   );
 }
 
-function HarmonizedActivity({ filters }: { filters: GlobalFilters }) {
+function HarmonizedActivity({ summary }: { summary: HarmonizedSummary }) {
+  const observedShare =
+    summary.rows.total === 0 ? 0 : (summary.rows.observed / summary.rows.total) * 100;
+  const estimatedShare =
+    summary.rows.total === 0 ? 0 : (summary.rows.estimated / summary.rows.total) * 100;
+
   return (
     <>
       <PageIntro
         kicker="Core methodology"
         title="Harmonized Fire Activity"
-        text="A calibrated long-term activity estimate from overlapping MODIS and VIIRS observations, with uncertainty shown explicitly."
+        text="Observed grid records and model-estimated values from the latest Western Ghats harmonization export."
+        badge={false}
       >
-        <Status type="experimental">Experimental · not yet validated</Status>
+        <Status type="experimental">Experimental · in-sample output</Status>
       </PageIntro>
       <div className="science-warning experiment">
         <Sparkles size={19} />
         <div>
-          <strong>Research output — not scientifically validated</strong>
+          <strong>{MODEL_OUTPUT_DISCLAIMER}</strong>
           <p>
-            Harmonized values shown here are interface demonstration data. Calibration is restricted
-            to the 2012–present overlap; no VIIRS-based estimate is extrapolated into the pre-2012
-            MODIS-only period.
+            Estimated counts and calibrated FRP are loaded from the latest harmonization summary.
+            These values use the {summary.countModel} count model and {summary.frpMethod} FRP
+            calibration; they are in-sample output, not independent validation.
           </p>
         </div>
       </div>
-      <Card
-        title="Long-term harmonized activity"
-        eyebrow="Raw observations and experimental estimate"
-        action={<DemoBadge />}
-      >
-        <TrendChart type="harmonized" height={380} range={filters.range} />
-      </Card>
-      <div className="content-grid three">
-        <Card title="Regional calibration" eyebrow={filters.region}>
+      <div className="content-grid two-one">
+        <Card
+          title="Observed and estimated rows"
+          eyebrow={summary.region.replace(/_/g, " ")}
+        >
           <div className="calibration-stat">
             <div>
-              <span>Overlap period</span>
-              <strong>2012 — 2024</strong>
+              <span>Observed</span>
+              <strong>{summary.rows.observed.toLocaleString("en-IN")}</strong>
             </div>
             <div>
-              <span>Paired months</span>
-              <strong>147 / 156</strong>
+              <span>Estimated</span>
+              <strong>{summary.rows.estimated.toLocaleString("en-IN")}</strong>
             </div>
             <div>
-              <span>Calibration fit</span>
-              <strong>R² 0.84</strong>
+              <span>Total exported</span>
+              <strong>{summary.rows.total.toLocaleString("en-IN")}</strong>
+            </div>
+          </div>
+          <div className="source-share" aria-label="Observed and estimated row proportions">
+            <div className="source-share-bar">
+              <span style={{ width: `${observedShare}%` }} />
+              <i style={{ width: `${estimatedShare}%` }} />
+            </div>
+            <div>
+              <span>Observed {observedShare.toFixed(1)}%</span>
+              <span>Estimated {estimatedShare.toFixed(1)}%</span>
             </div>
           </div>
         </Card>
-        <Card title="Uncertainty" eyebrow="95% interval">
-          <div className="uncertainty-visual">
-            <span>
-              Lower<strong>73</strong>
-            </span>
+        <Card title="Observed vs. estimated values" eyebrow="Per cell-day row">
+          <div className="calibration-stat">
             <div>
-              <i />
-              <b>84</b>
+              <span>
+                Observed mean VIIRS detections ·{" "}
+                {summary.metrics.observed.viirsDetections.count.toLocaleString("en-IN")} rows
+              </span>
+              <strong>{summary.metrics.observed.viirsDetections.mean.toFixed(2)}</strong>
             </div>
-            <span>
-              Upper<strong>96</strong>
-            </span>
+            <div>
+              <span>
+                Estimated mean VIIRS detections ·{" "}
+                {summary.metrics.estimated.predictedViirsDetections.count.toLocaleString("en-IN")} rows
+              </span>
+              <strong>
+                {summary.metrics.estimated.predictedViirsDetections.mean.toFixed(2)}
+              </strong>
+            </div>
+            <div>
+              <span>
+                Observed mean VIIRS FRP ·{" "}
+                {summary.metrics.observed.meanFrp.count.toLocaleString("en-IN")} rows
+              </span>
+              <strong>{summary.metrics.observed.meanFrp.mean.toFixed(2)} MW</strong>
+            </div>
+            <div>
+              <span>
+                Estimated calibrated FRP ·{" "}
+                {summary.metrics.estimated.calibratedFrp.count.toLocaleString("en-IN")} rows
+              </span>
+              <strong>{summary.metrics.estimated.calibratedFrp.mean.toFixed(2)} MW</strong>
+            </div>
           </div>
-          <small className="center-note">Current experimental estimate</small>
-        </Card>
-        <Card title="Validation summary" eyebrow="Held-out evaluation">
-          <div className="validation-box">
-            <Status type="partial">Preliminary</Status>
-            <strong>11.8%</strong>
-            <span>Median absolute error</span>
-            <p>Independent regional validation is still in progress.</p>
-          </div>
+          <small className="center-note">
+            Summary generated {new Date(summary.createdAt).toLocaleString()}
+          </small>
         </Card>
       </div>
+      <HarmonizedMetricCharts series={summary.timeseries.yearly} periodLabel="Year" />
       <Card title="How Harmonization Works" eyebrow="Transparent six-stage workflow">
         <div className="process-grid">
           {[
@@ -1614,30 +1676,51 @@ function Sidebar({
   );
 }
 
+
 export default function App() {
   const [page, setPage] = useState<PageName>("Overview");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const [projectData, setProjectData] = useState<Awaited<ReturnType<typeof loadDashboardData>> | null>(null);
+  const [dataError, setDataError] = useState("");
+
+  useEffect(() => {
+    loadDashboardData()
+      .then(setProjectData)
+      .catch((error) => setDataError(error.message));
+  }, []);
+
   const [filters, setFilters] = useState<GlobalFilters>({
-    region: "Western United States",
-    range: "Jan 2000 — Aug 2024",
+    region: "Western Ghats, Karnataka",
+    range: "All available data",
   });
+
   const content =
     page === "Overview" ? (
-      <Overview setPage={setPage} filters={filters} />
+      <Overview setPage={setPage} filters={filters} projectData={projectData!} />
     ) : page === "Fire Explorer" ? (
       <FireExplorer filters={filters} onFiltersChange={setFilters} />
     ) : page === "Historical Calendar" ? (
       <HistoricalCalendar filters={filters} onFiltersChange={setFilters} />
-    ) : page === "Sensor Comparison" ? (
-      <SensorComparison filters={filters} />
+    ) : page === "Regional Comparison" ? (
+      <SensorComparison summary={projectData!.harmonizedSummary} />
     ) : page === "Harmonized Activity" ? (
-      <HarmonizedActivity filters={filters} />
+      <HarmonizedActivity summary={projectData!.harmonizedSummary} />
     ) : page === "Anomaly Detection" ? (
       <AnomalyDetection filters={filters} onFiltersChange={setFilters} />
     ) : (
       <DataQuality filters={filters} />
     );
+
+  if (dataError) {
+    return <div className="app-shell">Unable to load FireTrace data: {dataError}</div>;
+  }
+
+  if (!projectData) {
+    return <div className="app-shell">Loading real FireTrace data...</div>;
+  }
+
   return (
     <div className={`app-shell ${collapsed ? "sidebar-collapsed" : ""}`}>
       <Sidebar
@@ -1659,7 +1742,7 @@ export default function App() {
           {content}
           <footer>
             <span>FireTrace · Satellite Fire Intelligence</span>
-            <span>Interface prototype · All values shown are demo data</span>
+            <span>NASA FIRMS · Project dataset</span>
           </footer>
         </main>
       </div>

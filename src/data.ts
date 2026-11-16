@@ -13,6 +13,21 @@ export type Hotspot = {
   type: "Vegetation" | "Agricultural" | "Unknown";
 };
 
+export type MapCell = {
+  region: string;
+  cell_id: string;
+  latitude: number;
+  longitude: number;
+  detections: number;
+  mean_frp: number | null;
+  max_frp: number | null;
+  night_detections: number;
+  modis_detections: number;
+  viirs_detections: number;
+  first_date: string;
+  last_date: string;
+};
+
 export const hotspots: Hotspot[] = [
   {
     id: 1,
@@ -235,7 +250,7 @@ export const pageNames = [
   "Overview",
   "Fire Explorer",
   "Historical Calendar",
-  "Sensor Comparison",
+  "Regional Comparison",
   "Harmonized Activity",
   "Anomaly Detection",
   "Data Quality",

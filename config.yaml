@@ -1,0 +1,26 @@
+# Default settings for MODIS–VIIRS active-fire harmonization.
+
+# Common-grid cell size in degrees.
+cell_size_degrees: 0.25
+
+# Minimum co-located MODIS/VIIRS samples required before a model is fit.
+min_overlap_samples: 30
+
+# Map both sensors onto low / nominal / high, then onto one numeric score.
+# MODIS bounds follow NASA FIRMS Collection 6: low 0–30, nominal 30–80, high 80–100.
+# Shared scores are the midpoints of those bins. VIIRS FIRMS confidence is already categorical.
+confidence_normalization:
+  classes: [low, nominal, high]
+  normalized_score:
+    low: 15
+    nominal: 55
+    high: 90
+  modis:
+    low_max: 30
+    nominal_max: 80
+    high_max: 100
+  viirs:
+    labels:
+      low: [low, l]
+      nominal: [nominal, n]
+      high: [high, h]
